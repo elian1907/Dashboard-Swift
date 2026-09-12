@@ -114,9 +114,10 @@ struct RootView: View {
             Theme.muted
           ).padding(12)
         }.buttonStyle(.glass).buttonBorderShape(.capsule)
-      }.padding(12).frame(width: 205)
+      }.padding(12).frame(width: 225)
         .glassEffect(
-          reduceTransparency ? .regular : .clear, in: .rect(cornerRadius: 24)
+          (reduceTransparency ? Glass.regular : .clear).tint(.black.opacity(0.10)),
+          in: .rect(cornerRadius: 24)
         ).padding(.leading, 12).padding(.vertical, 12)
       VStack(spacing: 0) {
         HStack {
