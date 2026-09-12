@@ -23,21 +23,24 @@ struct GeographyView: View {
         if pending {
           LoadingShimmer(height: 580)
         } else {
-          Grid(horizontalSpacing: 18, verticalSpacing: 16) {
-            GridRow {
+          LazyVStack(spacing: 16) {
+            HStack(spacing: 18) {
               Text("Pays").frame(maxWidth: .infinity, alignment: .leading)
-              Text("Téléchargements")
-              Text("Part")
-              Text("Évolution")
+              Text("Téléchargements").frame(width: 105, alignment: .trailing)
+              Text("Part").frame(width: 62, alignment: .trailing)
+              Text("Évolution").frame(width: 74, alignment: .trailing)
             }.font(Theme.body(10)).foregroundStyle(Theme.muted)
             ForEach(rows) { c in
-              GridRow {
+              HStack(spacing: 18) {
                 Text(c.flag + "  " + c.name).frame(maxWidth: .infinity, alignment: .leading)
-                Text(Analytics.number(c.units))
+                Text(Analytics.number(c.units)).frame(width: 105, alignment: .trailing)
                 Text(
                   report.missing == 0 && total > 0
-                    ? Analytics.number(c.units / total * 100, digits: 1) + " %" : "—")
+                    ? Analytics.number(c.units / total * 100, digits: 1) + " %" : "—"
+                )
+                .frame(width: 62, alignment: .trailing)
                 Text(report.missing == 0 ? Analytics.change(c.units, previous[c.code]) ?? "—" : "—")
+                  .frame(width: 74, alignment: .trailing)
               }
             }
           }.font(Theme.body(12)).monospacedDigit()

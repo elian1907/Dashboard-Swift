@@ -7,7 +7,7 @@ struct OverviewView: View {
   var downloads: [DataPoint] { store.series(store.downloads) }
   var revenue: [DataPoint] { store.series(store.revenue?.points() ?? []) }
   var body: some View {
-    VStack(spacing: 18) {
+    LazyVStack(spacing: 18) {
       HStack(spacing: 16) {
         Button {
           page = .revenue
@@ -128,7 +128,7 @@ struct AcquisitionView: View {
   var body: some View {
     let total = Analytics.total(points, complete: users)
     let valid = points.filter { $0.value != nil }
-    VStack(spacing: 18) {
+    LazyVStack(spacing: 18) {
       HStack(spacing: 16) {
         MetricTile(
           title: name + " sur la période", value: Analytics.number(total),

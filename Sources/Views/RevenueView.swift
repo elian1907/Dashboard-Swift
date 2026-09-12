@@ -7,7 +7,7 @@ struct RevenueView: View {
   var net: [DataPoint] { store.series(store.proceeds?.points() ?? []) }
   var trialTotal: JSONValue { store.trials?.totals["Total"] ?? .null }
   var body: some View {
-    VStack(spacing: 18) {
+    LazyVStack(spacing: 18) {
       HStack(spacing: 16) {
         MetricTile(
           title: "Revenus de la période", value: Analytics.money(Analytics.total(sales)),

@@ -27,7 +27,6 @@ struct TikTokView: View {
       }
     }
   }
-  var count: Int { max(1, Int(ceil(Double(rows.count) / 25))) }
   var pending: Bool { store.busy("tiktok") && store.tiktok == nil }
   var views: Double { all.reduce(0) { $0 + $1.views } }
   var rpm: Double? {
@@ -35,7 +34,10 @@ struct TikTokView: View {
     return (revenue + Offer.expected(store.allTrials?.totals ?? .null)) / views * 1000
   }
   var body: some View {
-    VStack(spacing: 18) {
+    let videoRows = rows
+    let pageCount = max(1, (videoRows.count + 24) / 25)
+    let displayedRows = Array(videoRows.dropFirst(min(page, pageCount - 1) * 25).prefix(25))
+    return LazyVStack(spacing: 18) {
       HStack(spacing: 14) {
         MetricTile(
           title: "Vues cumulées", value: Analytics.number(store.tiktok == nil ? nil : views),
@@ -157,40 +159,40 @@ struct TikTokView: View {
         if pending {
           LoadingShimmer(height: 220)
         } else {
-          Grid(horizontalSpacing: 20, verticalSpacing: 14) {
-            GridRow {
+          LazyVStack(spacing: 14) {
+            HStack(spacing: 12) {
               Text("Publication").frame(maxWidth: .infinity, alignment: .leading)
-              Text("Date")
-              Text("Vues")
-              Text("J’aime")
-              Text("Commentaires")
-              Text("Partages")
-              Text("Engagement")
+              videoCell("Date", width: 64)
+              videoCell("Vues", width: 72)
+              videoCell("J’aime", width: 64)
+              videoCell("Commentaires", width: 88)
+              videoCell("Partages", width: 60)
+              videoCell("Engagement", width: 82)
             }.font(Theme.body(10)).foregroundStyle(Theme.muted)
-            ForEach(Array(rows.dropFirst(min(page, count - 1) * 25).prefix(25))) { v in
-              GridRow {
+            ForEach(displayedRows) { video in
+              HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 5) {
-                  Text(v.title).lineLimit(2)
-                  Text(v.account).font(Theme.body(10)).foregroundStyle(Theme.muted)
+                  Text(video.title).lineLimit(2)
+                  Text(video.account).font(Theme.body(10)).foregroundStyle(Theme.muted)
                 }.frame(maxWidth: .infinity, alignment: .leading)
-                Text(Day.label(v.date))
-                Text(Analytics.number(v.views))
-                Text(Analytics.number(v.likes))
-                Text(Analytics.number(v.comments))
-                Text(Analytics.number(v.shares))
-                Text(Analytics.number(v.engagement, digits: 1) + " %")
-              }
+                videoCell(Day.label(video.date), width: 64)
+                videoCell(Analytics.number(video.views), width: 72)
+                videoCell(Analytics.number(video.likes), width: 64)
+                videoCell(Analytics.number(video.comments), width: 88)
+                videoCell(Analytics.number(video.shares), width: 60)
+                videoCell(Analytics.number(video.engagement, digits: 1) + " %", width: 82)
+              }.frame(height: 50)
             }
           }.font(Theme.body(12)).monospacedDigit()
-          if rows.isEmpty {
+          if videoRows.isEmpty {
             EmptyData(text: "Aucune vidéo ne correspond à cette sélection", height: 100)
           }
-          if count > 1 {
+          if pageCount > 1 {
             HStack {
               Spacer()
               Button("Précédent") { page -= 1 }.disabled(page == 0)
-              Text("\(min(page,count-1)+1) / \(count)")
-              Button("Suivant") { page += 1 }.disabled(page >= count - 1)
+              Text("\(min(page,pageCount-1)+1) / \(pageCount)")
+              Button("Suivant") { page += 1 }.disabled(page >= pageCount - 1)
             }.font(Theme.body(12)).buttonStyle(.glass).buttonBorderShape(.capsule)
           }
         }
@@ -198,6 +200,9 @@ struct TikTokView: View {
     }.onChange(of: account) { page = 0 }.onChange(of: search) { page = 0 }.onChange(
       of: store.period
     ) { page = 0 }
+  }
+  private func videoCell(_ text: String, width: CGFloat) -> some View {
+    Text(text).lineLimit(1).minimumScaleFactor(0.85).frame(width: width, alignment: .trailing)
   }
   var months: [String] { Array(Set(periodVideos.map { String($0.date.prefix(7)) })).sorted(by: >) }
   var curve: [DataPoint] {
