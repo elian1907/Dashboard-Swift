@@ -102,7 +102,7 @@ struct PageLoadingView: View {
   var body: some View {
     VStack(spacing: 18) {
       if !metrics.isEmpty {
-        HStack(spacing: 16) {
+        MetricRow(spacing: 16) {
           ForEach(metrics.indices, id: \.self) { index in
             let metric = metrics[index]
             if page == .overview {
@@ -112,7 +112,7 @@ struct PageLoadingView: View {
                 MetricTile(
                   title: metric.0, value: "", icon: metric.1, color: metric.2,
                   loading: true, chartLoading: true, interactive: true)
-              }.buttonStyle(.plain)
+              }.buttonStyle(DashboardButtonStyle())
             } else {
               MetricTile(
                 title: metric.0, value: "", icon: metric.1, color: metric.2,

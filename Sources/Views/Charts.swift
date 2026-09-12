@@ -42,7 +42,6 @@ struct NativeTimeChart: View {
   var bars = false
   var dots = false
   var compact = false
-  @State private var selected: String?
   private let timeline: ChartTimeline
   var labels: [String] { timeline.labels }
   init(
@@ -101,10 +100,7 @@ struct NativeTimeChart: View {
             }
           }
         }
-        if let selected, !compact {
-          RuleMark(x: .value("Date", Day.parse(selected))).foregroundStyle(.white.opacity(0.35))
-            .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
-        }
+
       }
       .chartXScale(
         domain: Day.parse(
@@ -133,50 +129,74 @@ struct NativeTimeChart: View {
         }
       }
       .chartOverlay { proxy in
-        GeometryReader { geo in
-          Rectangle().fill(.clear).contentShape(Rectangle()).onContinuousHover { phase in
-            switch phase {
-            case .active(let location):
-              guard let frame = proxy.plotFrame else { return }
-              let rect = geo[frame]
-              guard rect.contains(location),
-                let date: Date = proxy.value(atX: location.x - rect.minX)
-              else {
-                selected = nil
-                return
-              }
-              let nearest = timeline.nearest(to: date)
-              if nearest != selected { selected = nearest }
-            case .ended: selected = nil
-            }
-          }
-        }
+        TimeChartInspection(series: series, timeline: timeline, proxy: proxy)
       }
       .frame(height: height)
-      .overlay(alignment: .topTrailing) {
-        if let selected {
-          ChartTooltip(series: series, selected: selected).padding(6)
-        }
-      }
       .accessibilityLabel(series.map(\.name).joined(separator: ", "))
-      .focusable(!compact).onKeyPress(.leftArrow) {
-        move(-1)
-        return .handled
-      }.onKeyPress(.rightArrow) {
-        move(1)
-        return .handled
-      }.onKeyPress(.escape) {
-        selected = nil
-        return .handled
-      }
+    }
+  }
+}
+
+/// Pointer and keyboard state belong to the overlay, so moving across a chart never
+/// reconstructs its marks, axes or the surrounding card's layout.
+private struct TimeChartInspection: View {
+  let series: [PlotSeries]
+  let timeline: ChartTimeline
+  let proxy: ChartProxy
+  @State private var selected: String?
+
+  var body: some View {
+    GeometryReader { geo in
+      let rect = proxy.plotFrame.map { geo[$0] } ?? .zero
+      Rectangle().fill(.clear).contentShape(Rectangle())
+        .onContinuousHover { phase in
+          switch phase {
+          case .active(let location):
+            let nearest: String?
+            if rect.contains(location), let date: Date = proxy.value(atX: location.x - rect.minX) {
+              nearest = timeline.nearest(to: date)
+            } else {
+              nearest = nil
+            }
+            if nearest != selected { selected = nearest }
+          case .ended:
+            if selected != nil { selected = nil }
+          }
+        }
+        .overlay {
+          if let selected, let x = proxy.position(forX: Day.parse(selected)) {
+            Path { path in
+              path.move(to: CGPoint(x: rect.minX + x, y: rect.minY))
+              path.addLine(to: CGPoint(x: rect.minX + x, y: rect.maxY))
+            }.stroke(.white.opacity(0.35), style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
+              .allowsHitTesting(false)
+          }
+        }
+        .overlay(alignment: .topTrailing) {
+          if let selected { ChartTooltip(series: series, selected: selected).padding(6) }
+        }
+    }
+    .focusable().onKeyPress(.leftArrow) {
+      move(-1)
+      return .handled
+    }
+    .onKeyPress(.rightArrow) {
+      move(1)
+      return .handled
+    }
+    .onKeyPress(.escape) {
+      selected = nil
+      return .handled
     }
   }
   private func move(_ delta: Int) {
+    let labels = timeline.labels
     guard !labels.isEmpty else { return }
     let i = selected.flatMap { labels.firstIndex(of: $0) } ?? labels.count - 1
     selected = labels[max(0, min(labels.count - 1, i + delta))]
   }
 }
+
 struct DonutItem: Identifiable {
   var id: String
   var label: String
@@ -248,7 +268,6 @@ struct NativeDonut: View {
 }
 struct VideoScatterChart: View {
   var videos: [TikTokVideo]
-  @State private var hovered: TikTokVideo?
   var valid: [TikTokVideo] { videos.filter { $0.views > 0 } }
   var body: some View {
     ProgressiveContent(identity: "scatter") {
@@ -266,37 +285,66 @@ struct VideoScatterChart: View {
     .chartXAxisLabel("Vues cumulées").chartYAxisLabel("Engagement (%)").frame(height: 260)
     .chartOverlay { proxy in
       GeometryReader { geo in
-        Rectangle().fill(.clear).contentShape(Rectangle()).onContinuousHover { phase in
-          switch phase {
-          case .active(let position):
-            guard let frame = proxy.plotFrame else { return }
-            let rect = geo[frame]
-            hovered = valid.min { a, b in
-              func distance(_ v: TikTokVideo) -> Double {
-                guard let x = proxy.position(forX: v.views),
-                  let y = proxy.position(forY: v.engagement)
-                else { return .infinity }
-                return pow(x + rect.minX - position.x, 2) + pow(y + rect.minY - position.y, 2)
-              }
-              return distance(a) < distance(b)
-            }
-          case .ended: hovered = nil
+        let rect = proxy.plotFrame.map { geo[$0] } ?? .zero
+        let targets = valid.compactMap { video -> ScatterTarget? in
+          guard let x = proxy.position(forX: video.views),
+            let y = proxy.position(forY: video.engagement)
+          else { return nil }
+          return ScatterTarget(video: video, position: CGPoint(x: rect.minX + x, y: rect.minY + y))
+        }
+        ScatterInspection(targets: targets, plotFrame: rect)
+      }
+    }
+  }
+}
+
+private struct ScatterTarget {
+  let video: TikTokVideo
+  let position: CGPoint
+}
+
+private struct ScatterInspection: View {
+  let targets: [ScatterTarget]
+  let plotFrame: CGRect
+  @State private var hovered: TikTokVideo?
+  var body: some View {
+    Rectangle().fill(.clear).contentShape(Rectangle())
+      .onContinuousHover { phase in
+        switch phase {
+        case .active(let position):
+          guard plotFrame.contains(position) else {
+            if hovered != nil { hovered = nil }
+            return
           }
+          var closest: TikTokVideo?
+          var distance = CGFloat.infinity
+          for target in targets {
+            let dx = target.position.x - position.x
+            let dy = target.position.y - position.y
+            let candidate = dx * dx + dy * dy
+            if candidate < distance {
+              distance = candidate
+              closest = target.video
+            }
+          }
+          if hovered?.id != closest?.id { hovered = closest }
+        case .ended:
+          if hovered != nil { hovered = nil }
         }
       }
-    }
-    .overlay(alignment: .topLeading) {
-      if let hovered {
-        VStack(alignment: .leading, spacing: 6) {
-          Text(hovered.title).lineLimit(2)
-          Text(
-            "\(Analytics.number(hovered.views)) vues · \(Analytics.number(hovered.engagement,digits:1)) %"
-          ).foregroundStyle(Theme.muted)
-        }.font(Theme.body(12)).padding(12).frame(maxWidth: 260).background(
-          Color(hex: 0x303135), in: RoundedRectangle(cornerRadius: 12)
-        ).allowsHitTesting(false)
+      .overlay(alignment: .topLeading) {
+        if let hovered {
+          VStack(alignment: .leading, spacing: 6) {
+            Text(hovered.title).lineLimit(2)
+            Text(
+              "\(Analytics.number(hovered.views)) vues · \(Analytics.number(hovered.engagement, digits: 1)) %"
+            )
+            .foregroundStyle(Theme.muted)
+          }.font(Theme.body(12)).padding(12).frame(maxWidth: 260)
+            .background(Color(hex: 0x303135), in: RoundedRectangle(cornerRadius: 12))
+            .allowsHitTesting(false)
+        }
       }
-    }
   }
 }
 

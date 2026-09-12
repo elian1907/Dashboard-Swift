@@ -29,6 +29,53 @@ extension Color {
       blue: Double(hex & 255) / 255, opacity: 1)
   }
 }
+/// Metric cards share a known width. Measure each at that width instead of
+/// asking a flexible HStack to repeatedly negotiate their minimum/ideal sizes.
+struct MetricRow: Layout {
+  var spacing: CGFloat = 16
+  struct Cache {
+    var width: CGFloat?
+    var size: CGSize = .zero
+  }
+  func makeCache(subviews: Subviews) -> Cache { Cache() }
+  func updateCache(_ cache: inout Cache, subviews: Subviews) { cache = Cache() }
+  func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout Cache) -> CGSize {
+    guard !subviews.isEmpty else { return .zero }
+    let gaps = spacing * CGFloat(subviews.count - 1)
+    let width =
+      proposal.width.flatMap { $0.isFinite ? $0 : nil }
+      ?? (subviews.map { $0.sizeThatFits(.unspecified).width }.max() ?? 0) * CGFloat(subviews.count)
+      + gaps
+    if cache.width == width { return cache.size }
+    let child = ProposedViewSize(width: max(0, width - gaps) / CGFloat(subviews.count), height: nil)
+    let height = subviews.map { $0.sizeThatFits(child).height }.max() ?? 0
+    cache.width = width
+    cache.size = CGSize(width: width, height: height)
+    return cache.size
+  }
+  func placeSubviews(
+    in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout Cache
+  ) {
+    guard !subviews.isEmpty else { return }
+    let width =
+      max(0, bounds.width - spacing * CGFloat(subviews.count - 1)) / CGFloat(subviews.count)
+    for (index, view) in subviews.enumerated() {
+      view.place(
+        at: CGPoint(x: bounds.minX + CGFloat(index) * (width + spacing), y: bounds.minY),
+        anchor: .topLeading, proposal: ProposedViewSize(width: width, height: bounds.height))
+    }
+  }
+}
+
+/// Keep native Button semantics, with visible feedback at mouse-down even before
+/// a destination has been laid out. Release/drag-out and keyboard activation stay native.
+struct DashboardButtonStyle: ButtonStyle {
+  func makeBody(configuration: Configuration) -> some View {
+    configuration.label.opacity(configuration.isPressed ? 0.72 : 1)
+      .transaction { $0.animation = nil }
+  }
+}
+
 struct GlassPanel<Content: View>: View {
   var title: String? = nil
   var padding: CGFloat = 20
@@ -67,7 +114,7 @@ struct GlassSelector<Value: Hashable>: View {
               .glassEffect(
                 (selection == option.value ? Glass.clear : .regular).interactive(), in: .capsule)
           }
-          .buttonStyle(.plain)
+          .buttonStyle(DashboardButtonStyle())
           .foregroundStyle(selection == option.value ? Theme.text : Theme.muted)
           .accessibilityAddTraits(selection == option.value ? .isSelected : [])
         }

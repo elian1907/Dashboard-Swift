@@ -38,7 +38,7 @@ struct TikTokView: View {
     let pageCount = max(1, (videoRows.count + 24) / 25)
     let displayedRows = Array(videoRows.dropFirst(min(page, pageCount - 1) * 25).prefix(25))
     return LazyVStack(spacing: 18) {
-      HStack(spacing: 14) {
+      MetricRow(spacing: 14) {
         MetricTile(
           title: "Vues cumulées", value: Analytics.number(store.tiktok == nil ? nil : views),
           icon: "eye", color: Theme.tiktok, loading: pending)

@@ -8,7 +8,7 @@ struct RevenueView: View {
   var trialTotal: JSONValue { store.trials?.totals["Total"] ?? .null }
   var body: some View {
     LazyVStack(spacing: 18) {
-      HStack(spacing: 16) {
+      MetricRow(spacing: 16) {
         MetricTile(
           title: "Revenus de la période", value: Analytics.money(Analytics.total(sales)),
           icon: "eurosign.circle", color: Theme.revenue,

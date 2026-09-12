@@ -79,6 +79,73 @@ final class ProgressiveLoadingTests: XCTestCase {
       "The real content must replace the placeholder after the first paint.")
   }
 
+  @MainActor func testLeavingBeforeFirstPaintDoesNotConstructAbandonedPage() async {
+    var constructed: [String] = []
+    func destination(_ id: String) -> some View {
+      ProgressiveContent(identity: id) {
+        Text("Chargement").frame(width: 240, height: 120)
+      } content: {
+        constructed.append(id)
+        return Text(id).frame(width: 240, height: 120)
+      }
+    }
+    let host = NSHostingView(rootView: destination("ancienne"))
+    let window = NSWindow(
+      contentRect: NSRect(x: 0, y: 0, width: 240, height: 120),
+      styleMask: [.borderless], backing: .buffered, defer: false)
+    window.isReleasedWhenClosed = false
+    window.contentView = host
+    window.orderFront(nil)
+    defer {
+      window.orderOut(nil)
+      window.contentView = nil
+      window.close()
+    }
+    host.layoutSubtreeIfNeeded()
+    // Replace the destination before its first frame: no obsolete chart should mount.
+    host.rootView = destination("nouvelle")
+    host.layoutSubtreeIfNeeded()
+    host.displayIfNeeded()
+    await waitUntil { constructed.contains("nouvelle") }
+    XCTAssertTrue(constructed.contains("nouvelle"))
+    XCTAssertFalse(constructed.contains("ancienne"))
+  }
+
+  @MainActor func testMetricCardsKeepEqualWidthsWhenWindowResizes() async {
+    var probes: [Int: NSView] = [:]
+    let host = NSHostingView(
+      rootView: MetricRow(spacing: 16) {
+        ForEach(0..<4) { index in
+          Text(index == 0 ? "Téléchargements sur la période" : "MRR")
+            .frame(maxWidth: .infinity, minHeight: 100)
+            .background { FrameProbe { probes[index] = $0 } }
+        }
+      })
+    let window = NSWindow(
+      contentRect: NSRect(x: 0, y: 0, width: 900, height: 200),
+      styleMask: [.borderless], backing: .buffered, defer: false)
+    window.isReleasedWhenClosed = false
+    window.contentView = host
+    window.orderFront(nil)
+    defer {
+      window.orderOut(nil)
+      window.contentView = nil
+      window.close()
+    }
+    for width in [900.0, 700.0, 1200.0] {
+      window.setContentSize(NSSize(width: width, height: 200))
+      host.layoutSubtreeIfNeeded()
+      host.displayIfNeeded()
+      await waitUntil {
+        probes.count == 4 && abs((probes[0]?.frame.width ?? 0) - (width - 48) / 4) < 1
+      }
+      XCTAssertEqual(probes.count, 4)
+      for view in probes.values {
+        XCTAssertEqual(view.frame.width, (width - 48) / 4, accuracy: 1)
+      }
+    }
+  }
+
   @MainActor private func waitUntil(_ condition: () -> Bool) async {
     let deadline = Date().addingTimeInterval(3)
     while !condition(), Date() < deadline { await Task.yield() }
@@ -108,4 +175,14 @@ private actor ControlledCharts {
           RCChart(
             values: [RCValue(cohort: 0, measure: 0, value: value)], measures: nil, summary: nil)))
   }
+}
+
+private struct FrameProbe: NSViewRepresentable {
+  let register: (NSView) -> Void
+  func makeNSView(context: Context) -> NSView {
+    let view = NSView()
+    register(view)
+    return view
+  }
+  func updateNSView(_ view: NSView, context: Context) {}
 }

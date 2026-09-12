@@ -8,7 +8,7 @@ struct OverviewView: View {
   var revenue: [DataPoint] { store.series(store.revenue?.points() ?? []) }
   var body: some View {
     LazyVStack(spacing: 18) {
-      HStack(spacing: 16) {
+      MetricRow(spacing: 16) {
         Button {
           page = .revenue
         } label: {
@@ -49,7 +49,7 @@ struct OverviewView: View {
             loading: store.busy("users") && store.users == nil, points: store.userPoints,
             chartLoading: store.busy("users") && store.users == nil, interactive: true)
         }
-      }.buttonStyle(.plain)
+      }.buttonStyle(DashboardButtonStyle())
       GlassPanel(title: "Évolution de l’activité") {
         HStack(spacing: 10) {
           chip("downloads", "Téléchargements", Theme.downloads)
@@ -111,7 +111,7 @@ struct OverviewView: View {
         .glassEffect(
           (selected.contains(id) ? Glass.clear.tint(color.opacity(0.2)) : .regular).interactive(),
           in: .capsule)
-    }.buttonStyle(.plain)
+    }.buttonStyle(DashboardButtonStyle())
       .accessibilityAddTraits(selected.contains(id) ? .isSelected : [])
   }
 }
@@ -129,7 +129,7 @@ struct AcquisitionView: View {
     let total = Analytics.total(points, complete: users)
     let valid = points.filter { $0.value != nil }
     LazyVStack(spacing: 18) {
-      HStack(spacing: 16) {
+      MetricRow(spacing: 16) {
         MetricTile(
           title: name + " sur la période", value: Analytics.number(total),
           icon: users ? "person.2" : "arrow.down.circle", color: color, loading: pending)

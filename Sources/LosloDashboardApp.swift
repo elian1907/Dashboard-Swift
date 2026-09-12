@@ -167,7 +167,7 @@ private struct DashboardSidebar: View {
                 in: .rect(cornerRadius: 14)
               )
             }
-            .buttonStyle(.plain)
+            .buttonStyle(DashboardButtonStyle())
             .foregroundStyle(page == target ? Theme.text : Theme.muted)
             .accessibilityAddTraits(page == target ? .isSelected : [])
           }
