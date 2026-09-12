@@ -276,7 +276,7 @@ struct VideoScatterChart: View {
   }
 }
 
-/// Small card previews do not need a chart layout engine or pointer handling.
+/// Card previews use lightweight paths and preserve hover without chart selection gestures.
 private struct Sparkline: View {
   let series: [PlotSeries]
   let timeline: ChartTimeline
