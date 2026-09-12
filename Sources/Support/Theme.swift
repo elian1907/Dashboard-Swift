@@ -178,12 +178,12 @@ struct DashboardBackdrop: View {
   var body: some View {
     GeometryReader { geometry in
       ZStack {
-        Color(hex: 0x141517)
-        Ellipse().fill(Color(hex: 0x76736e).opacity(0.30))
+        Color(hex: 0x101113)
+        Ellipse().fill(Color(hex: 0x76736e).opacity(0.12))
           .frame(width: geometry.size.width * 0.8, height: geometry.size.height * 0.45)
           .blur(radius: 80).rotationEffect(.degrees(-28))
           .offset(x: geometry.size.width * 0.2, y: -geometry.size.height * 0.35)
-        Ellipse().fill(Color(hex: 0x56595f).opacity(0.28))
+        Ellipse().fill(Color(hex: 0x56595f).opacity(0.10))
           .frame(width: geometry.size.width * 0.6, height: geometry.size.height * 0.4)
           .blur(radius: 95).rotationEffect(.degrees(-30))
           .offset(x: -geometry.size.width * 0.25, y: geometry.size.height * 0.15)
