@@ -30,7 +30,7 @@ struct RevenueView: View {
           chartLoading: store.actives == nil && store.busy("actives"))
       }
       HStack(alignment: .top, spacing: 18) {
-        GlassPanel {
+        GlassPanel(fillsHeight: true) {
           HStack {
             DataCrossfade(value: mode == 2) {
               Text(mode == 2 ? "Évolution du MRR" : "Revenus quotidiens").font(Theme.heading(17))
@@ -62,7 +62,7 @@ struct RevenueView: View {
               loading: store.revenue == nil && store.busy("revenue"))
           }.padding(.top, 8)
         }.frame(maxWidth: .infinity)
-        GlassPanel(title: "Répartition des essais") {
+        GlassPanel(title: "Répartition des essais", fillsHeight: true) {
           if store.trials == nil && store.busy("trials") {
             LoadingShimmer(height: 235)
           } else if ["Conversions", "Pending", "Expirations"].allSatisfy({
@@ -79,7 +79,7 @@ struct RevenueView: View {
                 DonutItem(
                   id: "expired", label: "Expirés", value: trialTotal["Expirations"].number ?? 0,
                   color: Theme.other),
-              ], height: 148)
+              ], height: 180)
           } else {
             EmptyData(text: "Répartition indisponible", height: 235)
           }
@@ -95,29 +95,30 @@ struct RevenueView: View {
               loading: store.paying == nil && store.busy("paying"))
           }
         }.frame(width: 340)
-      }
+      }.fixedSize(horizontal: false, vertical: true)
       GlassPanel(title: "Conversion par offre") {
         if store.trials == nil && store.busy("trials") {
           LoadingShimmer(height: 150)
         } else {
-          Grid(horizontalSpacing: 25, verticalSpacing: 14) {
-            GridRow {
-              heading("Offre")
+          VStack(spacing: 6) {
+            MetricRow(spacing: 16) {
+              heading("Offre", leading: true)
               heading("Tarif")
               heading("Essais")
               heading("Convertis")
               heading("En cours")
               heading("Conversion")
-            }
+            }.padding(.horizontal, 12).padding(.bottom, 4)
             ForEach(Offer.all) { offer in
               let s = store.trials?.totals[offer.id] ?? .null
-              GridRow {
-                Text(offer.name).frame(maxWidth: .infinity, alignment: .leading)
-                AnimatedValue(Analytics.money(offer.price, digits: 2))
-                AnimatedValue(Analytics.number(s["Trial Starts"].number))
-                AnimatedValue(Analytics.number(s["Conversions"].number))
-                AnimatedValue(Analytics.number(s["Pending"].number.map { max(0, $0) }))
-                AnimatedValue(
+              let color = offerColor(offer.id)
+              tableRow(color: color) {
+                rowLabel(offer.name, color: color)
+                tableValue(Analytics.money(offer.price, digits: 2))
+                tableValue(Analytics.number(s["Trial Starts"].number))
+                tableValue(Analytics.number(s["Conversions"].number))
+                tableValue(Analytics.number(s["Pending"].number.map { max(0, $0) }))
+                tableValue(
                   Offer.conversion(s).map { Analytics.number($0 * 100, digits: 1) + " %" } ?? "—")
               }
             }
@@ -125,20 +126,20 @@ struct RevenueView: View {
         }
       }
       GlassPanel(title: "Revenus par mois") {
-        Grid(horizontalSpacing: 35, verticalSpacing: 14) {
-          GridRow {
-            heading("Mois")
+        VStack(spacing: 6) {
+          MetricRow(spacing: 16) {
+            heading("Mois", leading: true)
             heading("Revenus")
             heading("Net estimé")
             heading("Évolution mensuelle")
-          }
+          }.padding(.horizontal, 12).padding(.bottom, 4)
           ForEach(months, id: \.self) { month in
             let dates = store.range.labels.filter { $0.hasPrefix(month) }
-            GridRow {
-              Text(
+            let color = monthColor(month)
+            tableRow(color: color) {
+              rowLabel(
                 Day.parse(month + "-01").formatted(
-                  .dateTime.month(.wide).year().locale(Locale(identifier: "fr_FR")))
-              ).frame(maxWidth: .infinity, alignment: .leading)
+                  .dateTime.month(.wide).year().locale(Locale(identifier: "fr_FR"))), color: color)
               tableValue(
                 Analytics.money(
                   Analytics.total(Analytics.align(store.revenue?.points() ?? [], dates: dates))),
@@ -147,7 +148,7 @@ struct RevenueView: View {
                 Analytics.money(
                   Analytics.total(Analytics.align(store.proceeds?.points() ?? [], dates: dates))),
                 pending: store.proceeds == nil && store.busy("proceeds"))
-              AnimatedValue(monthChange(month, dates: dates) ?? "—")
+              tableValue(monthChange(month, dates: dates) ?? "—")
             }
           }
         }.font(Theme.body(12)).monospacedDigit().animateData(months)
@@ -155,12 +156,44 @@ struct RevenueView: View {
     }
   }
   var months: [String] { Array(Set(store.range.labels.map { String($0.prefix(7)) })).sorted(by: >) }
-  func heading(_ s: String) -> some View {
+  func heading(_ s: String, leading: Bool = false) -> some View {
     Text(s).font(Theme.body(11)).foregroundStyle(Theme.muted).frame(
-      maxWidth: .infinity, alignment: .leading)
+      maxWidth: .infinity, alignment: leading ? .leading : .trailing)
   }
-  @ViewBuilder func tableValue(_ value: String, pending: Bool) -> some View {
-    if pending { LoadingShimmer(height: 15).frame(width: 65) } else { AnimatedValue(value) }
+  func tableValue(_ value: String, pending: Bool = false) -> some View {
+    Group {
+      if pending { LoadingShimmer(height: 15).frame(width: 65) } else { AnimatedValue(value) }
+    }.frame(maxWidth: .infinity, alignment: .trailing)
+  }
+  private func rowLabel(_ text: String, color: Color) -> some View {
+    HStack(spacing: 8) {
+      Capsule().fill(color.opacity(0.9)).frame(width: 3, height: 16)
+      Text(text).lineLimit(1).minimumScaleFactor(0.85)
+    }.frame(maxWidth: .infinity, alignment: .leading)
+  }
+  private func tableRow<Content: View>(color: Color, @ViewBuilder content: () -> Content)
+    -> some View
+  {
+    MetricRow(spacing: 16) { content() }
+      .padding(.horizontal, 12).padding(.vertical, 9)
+      .background {
+        RoundedRectangle(cornerRadius: 10).fill(
+          LinearGradient(
+            colors: [color.opacity(0.16), color.opacity(0.07), color.opacity(0.025)],
+            startPoint: .leading, endPoint: .trailing))
+      }
+  }
+  private func offerColor(_ id: String) -> Color {
+    switch id {
+    case "loslo_special_offer": Theme.revenue
+    case "loslo_premium_yearly": Theme.downloads
+    default: Theme.users
+    }
+  }
+  private func monthColor(_ month: String) -> Color {
+    let colors = [Theme.revenue, Theme.downloads, Theme.subscriptions]
+    let number = Int(month.suffix(2)) ?? 1
+    return colors[max(0, number - 1) % colors.count]
   }
   func monthChange(_ month: String, dates: [String]) -> String? {
     let first = month + "-01"

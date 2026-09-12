@@ -131,18 +131,21 @@ struct GlassPanel<Content: View>: View {
   var title: String? = nil
   var padding: CGFloat = 20
   var interactive = false
+  var fillsHeight = false
   @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
   @ViewBuilder var content: Content
   var body: some View {
     VStack(alignment: .leading, spacing: 18) {
       if let title { Text(title).font(Theme.heading(17)) }
       content
-    }.padding(padding).frame(maxWidth: .infinity, alignment: .leading)
-      .glassEffect(
-        (reduceTransparency ? Glass.regular : .clear).interactive(interactive),
-        in: .rect(cornerRadius: 24)
-      )
-      .contentShape(RoundedRectangle(cornerRadius: 24))
+    }.padding(padding).frame(
+      maxWidth: .infinity, maxHeight: fillsHeight ? .infinity : nil, alignment: .topLeading
+    )
+    .glassEffect(
+      (reduceTransparency ? Glass.regular : .clear).interactive(interactive),
+      in: .rect(cornerRadius: 24)
+    )
+    .contentShape(RoundedRectangle(cornerRadius: 24))
   }
 }
 
