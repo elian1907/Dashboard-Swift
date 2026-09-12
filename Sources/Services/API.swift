@@ -5,6 +5,8 @@ struct ServiceResult<T> {
   var value: T
   var warning: String? = nil
 }
+extension ServiceResult: Sendable where T: Sendable {}
+
 enum HTTP {
   static func data(_ url: URL, headers: [String: String] = [:], body: Data? = nil) async throws
     -> Data
@@ -47,6 +49,15 @@ enum APIError: LocalizedError {
 actor RevenueService {
   let config: AppConfiguration
   init(_ config: AppConfiguration) { self.config = config }
+  func cached<T: Codable & Sendable>(_ type: T.Type, path: String, latestKey: String? = nil) -> T? {
+    NativeCache.read(Saved<T>.self, key: "rc:" + config.rcProject + ":" + path)?.data
+      ?? latestKey.flatMap { NativeCache.read(Saved<T>.self, key: $0)?.data }
+      ?? NativeCache.legacy(Saved<T>.self, key: "revenuecat:" + path)?.data
+  }
+  func cachedOverview() -> RCOverview? {
+    cached(RCOverview.self, path: overviewPath)
+  }
+  private var overviewPath: String { "/projects/\(config.rcProject)/metrics/overview?currency=EUR" }
   func fetch<T: Codable & Sendable>(_ type: T.Type, path: String, force: Bool = false) async throws
     -> ServiceResult<T>
   {
@@ -78,13 +89,49 @@ actor RevenueService {
   }
   func overview(force: Bool = false) async throws -> ServiceResult<RCOverview> {
     try await fetch(
-      RCOverview.self, path: "/projects/\(config.rcProject)/metrics/overview?currency=EUR",
+      RCOverview.self, path: overviewPath,
       force: force)
   }
   func chart(
     _ chart: String, start: String? = nil, end: String? = nil, resolution: String = "day",
     revenueType: String? = nil, segment: String? = nil, force: Bool = false
   ) async throws -> ServiceResult<RCChart> {
+    let path = chartPath(
+      chart, start: start, end: end, resolution: resolution, revenueType: revenueType,
+      segment: segment)
+    let result = try await fetch(RCChart.self, path: path, force: force)
+    if start == nil, end == nil {
+      try? NativeCache.save(
+        Saved(at: Date().timeIntervalSince1970 * 1000, data: result.value),
+        key: latestChartKey(
+          chart, resolution: resolution, revenueType: revenueType, segment: segment))
+    }
+    return result
+  }
+  func cachedChart(
+    _ chart: String, start: String? = nil, end: String? = nil,
+    resolution: String = "day", revenueType: String? = nil, segment: String? = nil
+  ) -> RCChart? {
+    cached(
+      RCChart.self,
+      path: chartPath(
+        chart, start: start, end: end, resolution: resolution, revenueType: revenueType,
+        segment: segment),
+      latestKey: start == nil && end == nil
+        ? latestChartKey(chart, resolution: resolution, revenueType: revenueType, segment: segment)
+        : nil)
+  }
+  private func latestChartKey(
+    _ chart: String, resolution: String, revenueType: String?, segment: String?
+  ) -> String {
+    "rc-latest:"
+      + [config.rcProject, config.launchDate, chart, resolution, revenueType ?? "", segment ?? ""]
+      .joined(separator: ":")
+  }
+  private func chartPath(
+    _ chart: String, start: String?, end: String?, resolution: String,
+    revenueType: String?, segment: String?
+  ) -> String {
     var parts = URLComponents()
     parts.queryItems = [
       URLQueryItem(name: "resolution", value: resolution),
@@ -97,15 +144,18 @@ actor RevenueService {
         URLQueryItem(name: "selectors", value: "{\"revenue_type\":\"\(revenueType)\"}"))
     }
     if let segment { parts.queryItems?.append(URLQueryItem(name: "segment", value: segment)) }
-    return try await fetch(
-      RCChart.self,
-      path: "/projects/\(config.rcProject)/charts/\(chart)?" + (parts.percentEncodedQuery ?? ""),
-      force: force)
+    return "/projects/\(config.rcProject)/charts/\(chart)?" + (parts.percentEncodedQuery ?? "")
   }
+
 }
 actor UsersService {
   let config: AppConfiguration
   init(_ c: AppConfiguration) { config = c }
+  func cached() -> UsersData? {
+    NativeCache.read(Saved<UsersData>.self, key: "users:" + config.supabaseURL)?.data
+      ?? NativeCache.legacy(
+        Saved<UsersData>.self, key: "supabase-users:" + NativeCache.hash(config.supabaseURL))?.data
+  }
   func fetch() async throws -> ServiceResult<UsersData> {
     let key = "users:" + config.supabaseURL
     let saved =

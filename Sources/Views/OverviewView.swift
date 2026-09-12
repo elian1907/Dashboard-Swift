@@ -15,9 +15,9 @@ struct OverviewView: View {
           MetricTile(
             title: "MRR actuel", value: Analytics.money(store.overview?.value("mrr")),
             icon: "chart.line.uptrend.xyaxis", color: Theme.revenue,
-            loading: store.busy("overview") && store.overview == nil,
+            loading: store.overview == nil && store.busy("overview"),
             points: store.series(store.mrr?.points() ?? []),
-            chartLoading: store.busy("mrr") && store.mrr == nil, interactive: true)
+            chartLoading: store.mrr == nil && store.busy("mrr"), interactive: true)
         }
         Button {
           page = .revenue
@@ -25,9 +25,9 @@ struct OverviewView: View {
           MetricTile(
             title: "Revenus de la période", value: Analytics.money(Analytics.total(revenue)),
             icon: "eurosign.circle", color: Theme.revenue,
-            loading: store.busy("revenue") && store.revenue == nil,
+            loading: store.revenue == nil && store.busy("revenue"),
             change: store.delta(store.revenue?.points() ?? []), points: revenue,
-            chartLoading: store.busy("revenue") && store.revenue == nil, interactive: true)
+            chartLoading: store.revenue == nil && store.busy("revenue"), interactive: true)
         }
         Button {
           page = .downloads
@@ -36,9 +36,9 @@ struct OverviewView: View {
             title: "Téléchargements",
             value: Analytics.number(Analytics.total(downloads, complete: false)),
             icon: "arrow.down.circle", color: Theme.downloads,
-            loading: store.busy("apple") && store.apple == nil,
+            loading: store.apple == nil && store.busy("apple"),
             change: store.delta(store.downloads), points: downloads,
-            chartLoading: store.busy("apple") && store.apple == nil, interactive: true)
+            chartLoading: store.apple == nil && store.busy("apple"), interactive: true)
         }
         Button {
           page = .users
@@ -46,8 +46,8 @@ struct OverviewView: View {
           MetricTile(
             title: "Inscriptions", value: Analytics.number(Analytics.total(store.userPoints)),
             icon: "person.2", color: Theme.users,
-            loading: store.busy("users") && store.users == nil, points: store.userPoints,
-            chartLoading: store.busy("users") && store.users == nil, interactive: true)
+            loading: store.users == nil && store.busy("users"), points: store.userPoints,
+            chartLoading: store.users == nil && store.busy("users"), interactive: true)
         }
       }.buttonStyle(DashboardButtonStyle())
       GlassPanel(title: "Évolution de l’activité") {
@@ -74,7 +74,7 @@ struct OverviewView: View {
             series: [
               PlotSeries(
                 id: "revenue", name: "Revenus", color: Theme.revenue, points: revenue,
-                loading: store.busy("revenue") && store.revenue == nil, unit: "€")
+                loading: store.revenue == nil && store.busy("revenue"), unit: "€")
             ], height: selected.count == 1 ? 440 : 200, bars: true)
         }
         if selected.isEmpty { EmptyData(text: "Sélectionne un indicateur", height: 420) }
@@ -87,13 +87,13 @@ struct OverviewView: View {
       result.append(
         PlotSeries(
           id: "downloads", name: "Téléchargements", color: Theme.downloads, points: downloads,
-          loading: store.busy("apple") && store.apple == nil))
+          loading: store.apple == nil && store.busy("apple")))
     }
     if selected.contains("users") {
       result.append(
         PlotSeries(
           id: "users", name: "Inscriptions", color: Theme.users, points: store.userPoints,
-          loading: store.busy("users") && store.users == nil))
+          loading: store.users == nil && store.busy("users")))
     }
     return result
   }
@@ -123,7 +123,7 @@ struct AcquisitionView: View {
   var color: Color { users ? Theme.users : Theme.downloads }
   var name: String { users ? "Inscriptions" : "Téléchargements" }
   var pending: Bool {
-    users ? store.busy("users") && store.users == nil : store.busy("apple") && store.apple == nil
+    users ? store.users == nil && store.busy("users") : store.apple == nil && store.busy("apple")
   }
   var body: some View {
     let total = Analytics.total(points, complete: users)

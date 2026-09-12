@@ -50,7 +50,7 @@ enum Period: String, CaseIterable, Identifiable {
     }
   }
 }
-struct PeriodRange: Equatable {
+struct PeriodRange: Equatable, Sendable {
   let start: String
   let end: String
   let labels: [String]

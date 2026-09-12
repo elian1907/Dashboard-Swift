@@ -1,5 +1,7 @@
 import AppKit
+import Observation
 import SwiftUI
+import Synchronization
 import XCTest
 
 @testable import LosloDashboard
@@ -8,7 +10,9 @@ final class ProgressiveLoadingTests: XCTestCase {
   @MainActor func testReadyCardDoesNotWaitForSlowerCard() async {
     let store = DashboardStore(loadConfiguration: false)
     let source = ControlledCharts()
-    let request = Task { await store.refreshPeriod(using: source.fetch) }
+    let request = Task {
+      await store.refreshPeriod(using: { try await source.fetch($0, range: $1) })
+    }
     await source.waitForRequests()
     XCTAssertTrue(store.busy("trials"))
     XCTAssertTrue(store.busy("paying"))
@@ -29,11 +33,15 @@ final class ProgressiveLoadingTests: XCTestCase {
   @MainActor func testOldPeriodCannotReplaceNewPeriodOrRemoveItsLoadingState() async {
     let store = DashboardStore(loadConfiguration: false)
     let oldSource = ControlledCharts()
-    let oldRequest = Task { await store.refreshPeriod(using: oldSource.fetch) }
+    let oldRequest = Task {
+      await store.refreshPeriod(using: { try await oldSource.fetch($0, range: $1) })
+    }
     await oldSource.waitForRequests()
     store.period = .week
     let newSource = ControlledCharts()
-    let newRequest = Task { await store.refreshPeriod(using: newSource.fetch) }
+    let newRequest = Task {
+      await store.refreshPeriod(using: { try await newSource.fetch($0, range: $1) })
+    }
     await newSource.waitForRequests()
     await oldSource.finish("trials", value: 999)
     await oldSource.finish("paying", value: 999)
@@ -221,6 +229,102 @@ final class ProgressiveLoadingTests: XCTestCase {
       constructed, "Returning must resume loading even if the first paint was interrupted.")
   }
 
+  @MainActor func testSavedValuesAppearBeforeTheNetworkRequestCompletes() async {
+    let store = DashboardStore(loadConfiguration: false)
+    let source = ControlledCharts()
+    let cached = RCChart(
+      values: [RCValue(cohort: 0, measure: 0, value: 12)], measures: nil, summary: nil)
+    let task = Task {
+      await store.load(
+        "revenue", current: store.revenue, cached: { cached },
+        fetch: { try await source.fetch("revenue", range: store.range) },
+        assign: { store.revenue = $0 })
+    }
+    await source.waitForRequests(1)
+    XCTAssertEqual(store.revenue?.values.first?.value, 12)
+    XCTAssertTrue(
+      store.busy("revenue"), "The source should keep refreshing after its saved value is visible.")
+    await source.finish("revenue", value: 25)
+    await task.value
+    XCTAssertEqual(store.revenue?.values.first?.value, 25)
+    XCTAssertFalse(store.busy("revenue"))
+  }
+
+  @MainActor func testNetworkFailureKeepsSavedValuesVisible() async {
+    let store = DashboardStore(loadConfiguration: false)
+    let cached = RCOverview(metrics: [RCMetric(id: "mrr", value: 12)])
+    await store.load(
+      "overview", current: store.overview, cached: { cached },
+      fetch: { throw DashboardError(message: "Offline test") }, assign: { store.overview = $0 })
+    XCTAssertEqual(store.overview?.value("mrr"), 12)
+    XCTAssertFalse(store.busy("overview"))
+    XCTAssertNotNil(store.errors["overview"])
+  }
+
+  @MainActor func testRefreshKeepsCurrentValuesAndDoesNotReadOlderCache() async {
+    let store = DashboardStore(loadConfiguration: false)
+    store.overview = RCOverview(metrics: [RCMetric(id: "mrr", value: 25)])
+    var cacheRead = false
+    await store.load(
+      "overview", current: store.overview,
+      cached: {
+        cacheRead = true
+        return RCOverview(metrics: [RCMetric(id: "mrr", value: 1)])
+      }, fetch: { throw DashboardError(message: "Offline test") }, assign: { store.overview = $0 })
+    XCTAssertFalse(cacheRead)
+    XCTAssertEqual(store.overview?.value("mrr"), 25)
+  }
+
+  @MainActor func testLoadingChangesOnlyInvalidateTheirOwnSource() {
+    let store = DashboardStore(loadConfiguration: false)
+    let appleInvalidations = Mutex(0)
+    withObservationTracking {
+      _ = store.busy("apple")
+    } onChange: {
+      appleInvalidations.withLock { $0 += 1 }
+    }
+    store.loading.insert("tiktok")
+    store.loading.remove("tiktok")
+    XCTAssertEqual(appleInvalidations.withLock { $0 }, 0)
+    store.loading.insert("apple")
+    XCTAssertEqual(appleInvalidations.withLock { $0 }, 1)
+    XCTAssertTrue(store.busy("apple"))
+  }
+
+  @MainActor func testReturningToPeriodRestoresOnlyItsOwnValuesDuringRefresh() async {
+    let store = DashboardStore(loadConfiguration: false)
+    store.config.launchDate = Day.shift(Day.key(Date()), -100)
+    store.period = .week
+    let week = ControlledCharts()
+    let initial = Task { await store.refreshPeriod(using: { try await week.fetch($0, range: $1) }) }
+    await week.waitForRequests()
+    await week.finish("trials", value: 7)
+    await week.finish("paying", value: 8)
+    await initial.value
+    store.period = .month
+    let month = ControlledCharts()
+    let next = Task { await store.refreshPeriod(using: { try await month.fetch($0, range: $1) }) }
+    await month.waitForRequests()
+    XCTAssertNil(store.trials, "Values from another period must never be shown.")
+    XCTAssertNil(store.paying)
+    await month.finish("trials", value: 30)
+    await month.finish("paying", value: 31)
+    await next.value
+    store.period = .week
+    let again = ControlledCharts()
+    let revisit = Task {
+      await store.refreshPeriod(using: { try await again.fetch($0, range: $1) })
+    }
+    await again.waitForRequests()
+    XCTAssertEqual(store.trials?.values.first?.value, 7)
+    XCTAssertEqual(store.paying?.values.first?.value, 8)
+    XCTAssertTrue(store.busy("trials"))
+    await again.finish("trials", value: 9)
+    await again.finish("paying", value: 10)
+    await revisit.value
+    XCTAssertEqual(store.trials?.values.first?.value, 9)
+  }
+
   @MainActor private func waitUntil(_ condition: () -> Bool) async {
     let deadline = Date().addingTimeInterval(3)
     while !condition(), Date() < deadline { await Task.yield() }
@@ -230,17 +334,19 @@ final class ProgressiveLoadingTests: XCTestCase {
 private actor ControlledCharts {
   private var requests: [String: CheckedContinuation<ServiceResult<RCChart>, Error>] = [:]
   private var waiter: CheckedContinuation<Void, Never>?
+  private var expectedCount = 2
   func fetch(_ key: String, range: PeriodRange) async throws -> ServiceResult<RCChart> {
     try await withCheckedThrowingContinuation { continuation in
       requests[key] = continuation
-      if requests.count == 2 {
+      if requests.count >= expectedCount {
         waiter?.resume()
         waiter = nil
       }
     }
   }
-  func waitForRequests() async {
-    if requests.count == 2 { return }
+  func waitForRequests(_ count: Int = 2) async {
+    expectedCount = count
+    if requests.count >= count { return }
     await withCheckedContinuation { waiter = $0 }
   }
   func finish(_ key: String, value: Double) {

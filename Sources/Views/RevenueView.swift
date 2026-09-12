@@ -12,22 +12,22 @@ struct RevenueView: View {
         MetricTile(
           title: "Revenus de la période", value: Analytics.money(Analytics.total(sales)),
           icon: "eurosign.circle", color: Theme.revenue,
-          loading: store.busy("revenue") && store.revenue == nil,
+          loading: store.revenue == nil && store.busy("revenue"),
           change: store.delta(store.revenue?.points() ?? []), points: sales,
-          chartLoading: store.busy("revenue") && store.revenue == nil)
+          chartLoading: store.revenue == nil && store.busy("revenue"))
         MetricTile(
           title: "MRR actuel", value: Analytics.money(store.overview?.value("mrr")),
           icon: "chart.line.uptrend.xyaxis", color: Theme.revenue,
-          loading: store.busy("overview") && store.overview == nil,
+          loading: store.overview == nil && store.busy("overview"),
           points: store.series(store.mrr?.points() ?? []),
-          chartLoading: store.busy("mrr") && store.mrr == nil)
+          chartLoading: store.mrr == nil && store.busy("mrr"))
         MetricTile(
           title: "Abonnements actifs",
           value: Analytics.number(store.overview?.value("active_subscriptions")),
           icon: "creditcard", color: Theme.subscriptions,
-          loading: store.busy("overview") && store.overview == nil,
+          loading: store.overview == nil && store.busy("overview"),
           points: store.series(store.actives?.points() ?? []),
-          chartLoading: store.busy("actives") && store.actives == nil)
+          chartLoading: store.actives == nil && store.busy("actives"))
       }
       HStack(alignment: .top, spacing: 18) {
         GlassPanel {
@@ -46,22 +46,22 @@ struct RevenueView: View {
                   ? store.series(store.mrr?.points() ?? [])
                   : mode == 1 ? Analytics.cumulative(sales) : sales,
                 loading: mode == 2
-                  ? store.busy("mrr") && store.mrr == nil
-                  : store.busy("revenue") && store.revenue == nil, unit: "€")
+                  ? store.mrr == nil && store.busy("mrr")
+                  : store.revenue == nil && store.busy("revenue"), unit: "€")
             ], height: 270, bars: mode == 0)
           HStack {
             SmallStat(
               title: "Revenus nets estimés de la période",
               value: Analytics.money(Analytics.total(net)),
-              loading: store.busy("proceeds") && store.proceeds == nil)
+              loading: store.proceeds == nil && store.busy("proceeds"))
             SmallStat(
               title: "Revenus depuis le lancement",
               value: Analytics.money(store.revenue?.totals["Revenue"].number),
-              loading: store.busy("revenue") && store.revenue == nil)
+              loading: store.revenue == nil && store.busy("revenue"))
           }.padding(.top, 8)
         }.frame(maxWidth: .infinity)
         GlassPanel(title: "Répartition des essais") {
-          if store.busy("trials") && store.trials == nil {
+          if store.trials == nil && store.busy("trials") {
             LoadingShimmer(height: 235)
           } else if ["Conversions", "Pending", "Expirations"].allSatisfy({
             (trialTotal[$0].number ?? -1) >= 0
@@ -86,16 +86,16 @@ struct RevenueView: View {
               title: "Conversion des essais terminés",
               value: Offer.conversion(trialTotal).map {
                 Analytics.number($0 * 100, digits: 1) + " %"
-              } ?? "—", loading: store.busy("trials"))
+              } ?? "—", loading: store.trials == nil && store.busy("trials"))
             SmallStat(
               title: "Payants sous 7 jours",
               value: Analytics.number(store.paying?.totals["Paying Customers (7 days)"].number),
-              loading: store.busy("paying"))
+              loading: store.paying == nil && store.busy("paying"))
           }
         }.frame(width: 340)
       }
       GlassPanel(title: "Conversion par offre") {
-        if store.busy("trials") {
+        if store.trials == nil && store.busy("trials") {
           LoadingShimmer(height: 150)
         } else {
           Grid(horizontalSpacing: 25, verticalSpacing: 14) {
@@ -140,11 +140,11 @@ struct RevenueView: View {
               tableValue(
                 Analytics.money(
                   Analytics.total(Analytics.align(store.revenue?.points() ?? [], dates: dates))),
-                pending: store.busy("revenue") && store.revenue == nil)
+                pending: store.revenue == nil && store.busy("revenue"))
               tableValue(
                 Analytics.money(
                   Analytics.total(Analytics.align(store.proceeds?.points() ?? [], dates: dates))),
-                pending: store.busy("proceeds") && store.proceeds == nil)
+                pending: store.proceeds == nil && store.busy("proceeds"))
               Text(monthChange(month, dates: dates) ?? "—")
             }
           }

@@ -3,7 +3,7 @@ import SwiftUI
 struct GeographyView: View {
   @Environment(DashboardStore.self) private var store
   @State private var search = ""
-  var pending: Bool { store.busy("apple") && store.apple == nil }
+  var pending: Bool { store.apple == nil && store.busy("apple") }
   var body: some View {
     let report = store.geography
     let rows = report.rows.filter {

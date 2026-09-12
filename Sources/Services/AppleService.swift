@@ -47,6 +47,22 @@ actor AppleService {
     }
     return nil
   }
+  func cached() -> SalesArchive? {
+    guard
+      var archive = NativeCache.read(SalesArchive.self, key: "apple:" + config.vendor)
+        ?? NativeCache.legacy(
+          SalesArchive.self, key: "appstore-v1:" + NativeCache.hash(config.vendor))
+    else { return nil }
+    let apps = archive.reports.values.reduce(into: [String: AppDay]()) { result, report in
+      for (id, app) in report.apps ?? [:] { result[id] = app }
+    }
+    do {
+      archive.selectedAppId = try Self.resolve(
+        apps,
+        configured: config.appID.isEmpty ? archive.selectedAppId : config.appID, name: config.name)
+      return archive
+    } catch { return nil }
+  }
   func fetch(force: Bool = false) async throws -> ServiceResult<SalesArchive> {
     let cacheKey = "apple:" + config.vendor
     var archive = NativeCache.read(SalesArchive.self, key: cacheKey) ?? SalesArchive()

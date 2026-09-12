@@ -35,6 +35,7 @@ actor TikTokService {
           + ($0.value.addingPercentEncoding(withAllowedCharacters: allowed) ?? "")
       }.joined(separator: "&").utf8)
   }
+  func cached() -> TikTokData? { NativeCache.read(TikTokData.self, key: "tiktok-history") }
   func fetch() async throws -> ServiceResult<TikTokData> {
     let saved = NativeCache.read(TikTokData.self, key: "tiktok-history")
     var credentials = try Keychain.read([NativeTikTokCredential].self, key: "tiktok-accounts") ?? []

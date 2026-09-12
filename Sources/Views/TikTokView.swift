@@ -27,7 +27,7 @@ struct TikTokView: View {
       }
     }
   }
-  var pending: Bool { store.busy("tiktok") && store.tiktok == nil }
+  var pending: Bool { store.tiktok == nil && store.busy("tiktok") }
   var views: Double { all.reduce(0) { $0 + $1.views } }
   var rpm: Double? {
     guard views > 0, let revenue = store.revenue?.totals["Revenue"].number else { return nil }
@@ -57,8 +57,8 @@ struct TikTokView: View {
         MetricTile(
           title: "RPM TikTok", value: Analytics.money(rpm, digits: 2), icon: "eurosign.circle",
           color: Theme.revenue,
-          loading: pending || store.busy("revenue") && store.revenue == nil
-            || store.busy("allTrials") && store.allTrials == nil)
+          loading: pending || store.revenue == nil && store.busy("revenue")
+            || store.allTrials == nil && store.busy("allTrials"))
       }
       HStack(alignment: .top, spacing: 18) {
         GlassPanel {
