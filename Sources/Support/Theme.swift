@@ -149,6 +149,102 @@ struct GlassPanel<Content: View>: View {
   }
 }
 
+/// Use Apple's glass renderer for the track and the moving lens. The lens lives
+/// outside ButtonStyle so immediate press feedback cannot cancel its animation.
+struct LiquidGlassPeriodPicker: View {
+  @Binding var selection: Period
+  @Namespace private var glassNamespace
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+  var body: some View {
+    HStack(spacing: 0) {
+      ForEach(Period.allCases) { period in
+        Button {
+          if selection != period { selection = period }
+        } label: {
+          Text(period.label).font(Theme.body(12)).lineLimit(1)
+            .padding(.horizontal, 16).frame(minWidth: 76, minHeight: 36)
+            .foregroundStyle(selection == period ? Theme.text : Theme.muted)
+        }
+        .buttonStyle(DashboardButtonStyle())
+        .accessibilityAddTraits(selection == period ? .isSelected : [])
+        .anchorPreference(key: PeriodSegmentBounds.self, value: .bounds) { [period: $0] }
+      }
+    }
+    .padding(4)
+    .backgroundPreferenceValue(PeriodSegmentBounds.self) { bounds in
+      GeometryReader { geometry in
+        if let anchor = bounds[selection] {
+          let frame = geometry[anchor]
+          GlassEffectContainer(spacing: 0) {
+            Capsule().fill(.clear)
+              .frame(width: frame.width, height: frame.height)
+              .glassEffect(
+                (reduceTransparency ? Glass.regular : .clear).tint(.white.opacity(0.14))
+                  .interactive(), in: .capsule
+              )
+              .glassEffectID("period-selection", in: glassNamespace)
+          }
+          .offset(x: frame.minX, y: frame.minY)
+          .animation(
+            reduceMotion ? nil : .spring(response: 0.34, dampingFraction: 0.86),
+            value: selection)
+        }
+      }
+      .allowsHitTesting(false)
+      .accessibilityHidden(true)
+    }
+    .background {
+      Capsule().fill(.clear)
+        .glassEffect(
+          (reduceTransparency ? Glass.regular : .clear).tint(.black.opacity(0.16)),
+          in: .capsule
+        )
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+    .fixedSize()
+    .accessibilityElement(children: .contain)
+    .accessibilityLabel("Période d’analyse")
+    .accessibilityValue(selection.label)
+    .accessibilityAdjustableAction { direction in
+      switch direction {
+      case .increment: step(1)
+      case .decrement: step(-1)
+      @unknown default: break
+      }
+    }
+    .focusable()
+    .focusEffectDisabled()
+    .onKeyPress(.leftArrow) {
+      step(-1)
+      return .handled
+    }
+    .onKeyPress(.rightArrow) {
+      step(1)
+      return .handled
+    }
+  }
+
+  private func step(_ offset: Int) {
+    guard let index = Period.allCases.firstIndex(of: selection) else { return }
+    let next = index + offset
+    guard Period.allCases.indices.contains(next) else { return }
+    selection = Period.allCases[next]
+  }
+}
+
+private struct PeriodSegmentBounds: PreferenceKey {
+  static let defaultValue: [Period: Anchor<CGRect>] = [:]
+  static func reduce(
+    value: inout [Period: Anchor<CGRect>],
+    nextValue: () -> [Period: Anchor<CGRect>]
+  ) {
+    value.merge(nextValue(), uniquingKeysWith: { _, latest in latest })
+  }
+}
+
 /// Each control uses the system material and button interaction, without a second painted surface.
 struct GlassSelector<Value: Hashable>: View {
   let title: String
