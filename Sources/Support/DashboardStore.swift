@@ -2,7 +2,12 @@ import Foundation
 import Observation
 
 @MainActor @Observable final class DashboardStore {
-  var config = AppConfiguration()
+  var config = AppConfiguration() {
+    didSet {
+      downloadCache = nil
+      geographyCache = nil
+    }
+  }
   var period: Period = .month
   var overview: RCOverview?
   var revenue: RCChart?
@@ -13,7 +18,12 @@ import Observation
   var paying: RCChart?
   var allTrials: RCChart?
   var users: UsersData?
-  var apple: SalesArchive?
+  var apple: SalesArchive? {
+    didSet {
+      downloadCache = nil
+      geographyCache = nil
+    }
+  }
   var tiktok: TikTokData?
   var loading: Set<String> = []
   var errors: [String: String] = [:]
@@ -32,8 +42,24 @@ import Observation
     rangeCache = (selection, launch, today, result)
     return result
   }
+  @ObservationIgnored private var downloadCache: (String, String, [DataPoint])?
+  @ObservationIgnored private var geographyCache: (PeriodRange, GeographySnapshot)?
   var downloads: [DataPoint] {
-    apple?.points(appID: apple?.selectedAppId, launch: config.launchDate) ?? []
+    let archive = apple
+    let launch = config.launchDate
+    let today = Day.key(Date())
+    if let cache = downloadCache, cache.0 == launch, cache.1 == today { return cache.2 }
+    let result = archive?.points(appID: archive?.selectedAppId, launch: launch) ?? []
+    downloadCache = (launch, today, result)
+    return result
+  }
+  var geography: GeographySnapshot {
+    let archive = apple
+    let range = range
+    if let cache = geographyCache, cache.0 == range { return cache.1 }
+    let result = GeographySnapshot(archive: archive, range: range)
+    geographyCache = (range, result)
+    return result
   }
   var userPoints: [DataPoint] {
     Analytics.align(
@@ -145,27 +171,27 @@ import Observation
     async let p = rc.chart("conversion_to_paying", start: r.start, end: r.end)
     do {
       let result = try await t
-      if periodGeneration == epoch && generation == configEpoch {
+      if periodGeneration == epoch && generation == configEpoch && !Task.isCancelled {
         trials = result.value
         errors["trials"] = result.warning
       }
     } catch {
-      if periodGeneration == epoch && generation == configEpoch {
+      if periodGeneration == epoch && generation == configEpoch && !Task.isCancelled {
         errors["trials"] = error.localizedDescription
       }
     }
     do {
       let result = try await p
-      if periodGeneration == epoch && generation == configEpoch {
+      if periodGeneration == epoch && generation == configEpoch && !Task.isCancelled {
         paying = result.value
         errors["paying"] = result.warning
       }
     } catch {
-      if periodGeneration == epoch && generation == configEpoch {
+      if periodGeneration == epoch && generation == configEpoch && !Task.isCancelled {
         errors["paying"] = error.localizedDescription
       }
     }
-    if periodGeneration == epoch && generation == configEpoch {
+    if periodGeneration == epoch && generation == configEpoch && !Task.isCancelled {
       loading.subtract(["trials", "paying"])
     }
   }

@@ -3,26 +3,16 @@ import SwiftUI
 struct GeographyView: View {
   @Environment(DashboardStore.self) private var store
   @State private var search = ""
-  var report: (rows: [CountryRow], missing: Int) {
-    store.apple?.countries(store.range.labels, appID: store.apple?.selectedAppId) ?? (
-      [], store.range.labels.count
-    )
-  }
-  var rows: [CountryRow] {
-    report.rows.filter {
+  var pending: Bool { store.busy("apple") && store.apple == nil }
+  var body: some View {
+    let report = store.geography
+    let rows = report.rows.filter {
       search.isEmpty || $0.name.localizedCaseInsensitiveContains(search)
         || $0.code.localizedCaseInsensitiveContains(search)
     }
-  }
-  var pending: Bool { store.busy("apple") && store.apple == nil }
-  var previous: [String: Double] {
-    let r = store.apple?.countries(store.range.previous, appID: store.apple?.selectedAppId)
-    guard r?.missing == 0 else { return [:] }
-    return Dictionary(uniqueKeysWithValues: (r?.rows ?? []).map { ($0.code, $0.units) })
-  }
-  var total: Double { report.rows.reduce(0) { $0 + $1.units } }
-  var body: some View {
-    HStack(alignment: .top, spacing: 18) {
+    let total = report.total
+    let previous = report.previous
+    return HStack(alignment: .top, spacing: 18) {
       GlassPanel {
         HStack {
           Text("Classement des pays").font(Theme.heading(18))
@@ -59,7 +49,7 @@ struct GeographyView: View {
           if pending {
             LoadingShimmer(height: 280)
           } else if report.missing == 0, report.rows.allSatisfy({ $0.units >= 0 }) {
-            NativeDonut(items: distribution, height: 170)
+            NativeDonut(items: distribution(report.rows), height: 170)
           } else {
             EmptyData(text: "Répartition indisponible", height: 280)
           }
@@ -74,11 +64,11 @@ struct GeographyView: View {
       }.frame(width: 390)
     }
   }
-  var distribution: [DonutItem] {
-    var list = Array(report.rows.prefix(5).enumerated()).map { i, c in
+  func distribution(_ rows: [CountryRow]) -> [DonutItem] {
+    var list = Array(rows.prefix(5).enumerated()).map { i, c in
       DonutItem(id: c.code, label: c.name, value: c.units, color: Theme.palette[i])
     }
-    let rest = report.rows.dropFirst(5).reduce(0) { $0 + $1.units }
+    let rest = rows.dropFirst(5).reduce(0) { $0 + $1.units }
     if rest > 0 {
       list.append(DonutItem(id: "other", label: "Autres pays", value: rest, color: Theme.other))
     }

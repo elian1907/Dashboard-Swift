@@ -80,4 +80,63 @@ final class AnalyticsTests: XCTestCase {
     XCTAssertThrowsError(try Gzip.decode(Data()))
     XCTAssertThrowsError(try Gzip.decode(Data([31, 139, 8, 0, 0, 0])))
   }
+  func testHoverFindsNearestDayAcrossGapsAndOutsideDomain() {
+    let timeline = ChartTimeline(["2026-06-20", "2026-06-14", "2026-06-20"])
+    XCTAssertEqual(timeline.labels, ["2026-06-14", "2026-06-20"])
+    XCTAssertEqual(timeline.nearest(to: Day.parse("2026-06-10")), "2026-06-14")
+    XCTAssertEqual(timeline.nearest(to: Day.parse("2026-06-16")), "2026-06-14")
+    XCTAssertEqual(timeline.nearest(to: Day.parse("2026-06-19")), "2026-06-20")
+    XCTAssertEqual(timeline.nearest(to: Day.parse("2026-06-30")), "2026-06-20")
+    XCTAssertNil(ChartTimeline([]).nearest(to: Date()))
+  }
+
+  func testPreparedChartKeepsGapsAndZeroValues() {
+    let series = PlotSeries(
+      id: "test", name: "Test", color: .blue,
+      points: [
+        DataPoint(date: "2026-06-14", value: 0),
+        DataPoint(date: "2026-06-15", value: nil),
+        DataPoint(date: "2026-06-16", value: 9),
+        DataPoint(date: "2026-06-17", value: .nan),
+        DataPoint(date: "2026-06-18", value: 4),
+      ])
+    XCTAssertEqual(series.values.map(\.value), [0, 9, 4])
+    XCTAssertEqual(series.values.map(\.segment), [0, 1, 2])
+    XCTAssertEqual(series.values[1].day, Day.parse("2026-06-16"))
+  }
+
+  @MainActor func testCachedReportsRefreshWhenDataPeriodOrConfigurationChanges() {
+    let store = DashboardStore(loadConfiguration: false)
+    let today = Day.key(Date())
+    let end = Day.shift(today, -1)
+    store.config.launchDate = Day.shift(today, -10)
+    store.period = .week
+    store.apple = SalesArchive(
+      selectedAppId: "111",
+      reports: Dictionary(
+        uniqueKeysWithValues:
+          Day.range(store.config.launchDate, end).map { date in
+            (
+              date,
+              SalesReport(
+                checkedAt: 0, apps: ["111": AppDay(title: "Loslo", units: 2, countries: ["FR": 2])])
+            )
+          }))
+    XCTAssertEqual(store.geography.total, 14)
+    XCTAssertEqual(store.downloads.last?.value, 2)
+    XCTAssertEqual(store.geography.total, 14)
+    store.apple?.reports[end] = SalesReport(
+      checkedAt: 1, apps: ["111": AppDay(title: "Loslo", units: 9, countries: ["FR": 9])])
+    XCTAssertEqual(store.geography.total, 21)
+    XCTAssertEqual(store.downloads.last?.value, 9)
+    store.period = .all
+    XCTAssertEqual(store.geography.total, 27)
+    store.config.launchDate = end
+    XCTAssertEqual(store.downloads.count, 1)
+    XCTAssertEqual(store.geography.total, 9)
+    store.apple = nil
+    XCTAssertTrue(store.downloads.isEmpty)
+    XCTAssertTrue(store.geography.rows.isEmpty)
+  }
+
 }

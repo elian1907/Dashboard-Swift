@@ -289,3 +289,43 @@ struct Offer: Identifiable {
     }
   }
 }
+
+struct GeographySnapshot {
+  let rows: [CountryRow]
+  let missing: Int
+  let previous: [String: Double]
+  let total: Double
+  init(archive: SalesArchive?, range: PeriodRange) {
+    let current = archive?.countries(range.labels, appID: archive?.selectedAppId)
+    rows = current?.rows ?? []
+    missing = current?.missing ?? range.labels.count
+    total = rows.reduce(0) { $0 + $1.units }
+    let comparison = archive?.countries(range.previous, appID: archive?.selectedAppId)
+    previous =
+      comparison?.missing == 0
+      ? Dictionary(uniqueKeysWithValues: (comparison?.rows ?? []).map { ($0.code, $0.units) }) : [:]
+  }
+}
+
+/// Sorted day positions are prepared once; hover only performs a binary search.
+struct ChartTimeline {
+  let labels: [String]
+  let dates: [Date]
+  init(_ labels: [String]) {
+    self.labels = Array(Set(labels)).sorted()
+    dates = self.labels.map(Day.parse)
+  }
+  func nearest(to date: Date) -> String? {
+    guard !dates.isEmpty else { return nil }
+    var low = 0
+    var high = dates.count
+    while low < high {
+      let middle = (low + high) / 2
+      if dates[middle] < date { low = middle + 1 } else { high = middle }
+    }
+    if low == 0 { return labels[0] }
+    if low == dates.count { return labels[dates.count - 1] }
+    return date.timeIntervalSince(dates[low - 1]) <= dates[low].timeIntervalSince(date)
+      ? labels[low - 1] : labels[low]
+  }
+}

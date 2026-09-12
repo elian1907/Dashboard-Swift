@@ -41,9 +41,10 @@ struct GlassPanel<Content: View>: View {
       content
     }.padding(padding).frame(maxWidth: .infinity, alignment: .leading)
       .glassEffect(
-        (reduceTransparency ? Glass.regular : .clear)
-          .interactive(interactive),
-        in: .rect(cornerRadius: 24))
+        (reduceTransparency ? Glass.regular : .clear).interactive(interactive),
+        in: .rect(cornerRadius: 24)
+      )
+      .contentShape(RoundedRectangle(cornerRadius: 24))
   }
 }
 
@@ -52,16 +53,14 @@ struct GlassSelector<Value: Hashable>: View {
   let title: String
   @Binding var selection: Value
   let options: [(value: Value, label: String)]
-  @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
   var body: some View {
     GlassEffectContainer(spacing: 4) {
       HStack(spacing: 6) {
         ForEach(options, id: \.value) { option in
           Button {
-            withAnimation(reduceMotion ? nil : .spring(response: 0.3, dampingFraction: 1)) {
-              selection = option.value
-            }
+            guard selection != option.value else { return }
+            selection = option.value
           } label: {
             Text(option.label).font(Theme.body(12)).lineLimit(1)
               .minimumScaleFactor(0.8).padding(.horizontal, 14).padding(.vertical, 9)
@@ -80,15 +79,17 @@ struct GlassSelector<Value: Hashable>: View {
 struct DashboardBackdrop: View {
   var body: some View {
     GeometryReader { geometry in
-      LinearGradient(
-        colors: [Color(hex: 0x303133), Theme.background, Color(hex: 0x1b1c1e)],
-        startPoint: .topLeading, endPoint: .bottomTrailing
-      )
-      .overlay {
-        RadialGradient(
-          colors: [Color(hex: 0x78736a).opacity(0.16), .clear],
-          center: .topTrailing, startRadius: 0, endRadius: geometry.size.width * 0.7)
-      }
+      ZStack {
+        Color(hex: 0x17181a)
+        Ellipse().fill(Color(hex: 0x76736e).opacity(0.42))
+          .frame(width: geometry.size.width * 0.8, height: geometry.size.height * 0.45)
+          .blur(radius: 80).rotationEffect(.degrees(-28))
+          .offset(x: geometry.size.width * 0.2, y: -geometry.size.height * 0.35)
+        Ellipse().fill(Color(hex: 0x56595f).opacity(0.42))
+          .frame(width: geometry.size.width * 0.6, height: geometry.size.height * 0.4)
+          .blur(radius: 95).rotationEffect(.degrees(-30))
+          .offset(x: -geometry.size.width * 0.25, y: geometry.size.height * 0.15)
+      }.frame(width: geometry.size.width, height: geometry.size.height).clipped()
     }.ignoresSafeArea().allowsHitTesting(false).accessibilityHidden(true)
   }
 }

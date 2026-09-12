@@ -65,7 +65,7 @@ struct RootView: View {
   @Environment(DashboardStore.self) private var store
   @Environment(\.scenePhase) private var scenePhase
   @State private var page: DashboardPage = .overview
-  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @State private var periodTask: Task<Void, Never>?
   var body: some View {
     @Bindable var store = store
     HStack(spacing: 0) {
@@ -87,9 +87,8 @@ struct RootView: View {
             .padding(.bottom, 6)
           ForEach(DashboardPage.allCases) { target in
             Button {
-              withAnimation(reduceMotion ? nil : .spring(response: 0.3, dampingFraction: 1)) {
-                page = target
-              }
+              guard page != target else { return }
+              page = target
             } label: {
               HStack(spacing: 11) {
                 Image(systemName: target.symbol).font(.system(size: 15, weight: .semibold)).frame(
@@ -125,8 +124,12 @@ struct RootView: View {
             title: "Période d’analyse", selection: $store.period,
             options: Period.allCases.map { (value: $0, label: $0.label) })
         }.padding(.horizontal, 26).padding(.top, 22).padding(.bottom, 24)
-        ScrollView { content.padding(.horizontal, 26).padding(.bottom, 26).frame(maxWidth: 1700) }
-          .scrollIndicators(.hidden).id(page)
+        ScrollView {
+          GlassEffectContainer(spacing: 0) {
+            content.padding(.horizontal, 26).padding(.bottom, 26).frame(maxWidth: 1700)
+          }
+        }.scrollIndicators(.hidden).id(page)
+          .transaction { $0.animation = nil }
       }
     }.background { DashboardBackdrop() }.foregroundStyle(Theme.text)
       .task {
@@ -137,7 +140,11 @@ struct RootView: View {
           if scenePhase == .active { await store.refresh() }
         }
       }
-      .onChange(of: store.period) { Task { await store.refreshPeriod() } }
+      .onChange(of: store.period) {
+        periodTask?.cancel()
+        periodTask = Task { await store.refreshPeriod() }
+      }
+      .onDisappear { periodTask?.cancel() }
   }
   @ViewBuilder var content: some View {
     switch page {

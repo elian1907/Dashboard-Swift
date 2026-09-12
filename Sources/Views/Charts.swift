@@ -2,26 +2,37 @@ import Charts
 import SwiftUI
 
 struct PlotSeries: Identifiable {
-  var id: String
-  var name: String
-  var color: Color
-  var points: [DataPoint]
-  var loading = false
-  var unit = ""
+  let id: String
+  let name: String
+  let color: Color
+  let points: [DataPoint]
+  let loading: Bool
+  let unit: String
   struct Datum: Identifiable {
     let date: String
+    let day: Date
     let value: Double
     let segment: Int
     var id: String { date }
   }
-  var values: [Datum] {
+  let values: [Datum]
+  init(
+    id: String, name: String, color: Color, points: [DataPoint], loading: Bool = false,
+    unit: String = ""
+  ) {
+    self.id = id
+    self.name = name
+    self.color = color
+    self.points = points
+    self.loading = loading
+    self.unit = unit
     var segment = 0
-    return points.compactMap { p in
+    values = points.compactMap { p in
       guard let value = p.value, value.isFinite else {
         segment += 1
         return nil
       }
-      return Datum(date: p.date, value: value, segment: segment)
+      return Datum(date: p.date, day: Day.parse(p.date), value: value, segment: segment)
     }
   }
 }
@@ -32,13 +43,27 @@ struct NativeTimeChart: View {
   var dots = false
   var compact = false
   @State private var selected: String?
-  var labels: [String] { Array(Set(series.flatMap { $0.points.map(\.date) })).sorted() }
+  private let timeline: ChartTimeline
+  var labels: [String] { timeline.labels }
+  init(
+    series: [PlotSeries], height: CGFloat = 220, bars: Bool = false, dots: Bool = false,
+    compact: Bool = false
+  ) {
+    self.series = series
+    self.height = height
+    self.bars = bars
+    self.dots = dots
+    self.compact = compact
+    timeline = ChartTimeline(series.flatMap { $0.points.map(\.date) })
+  }
   var ready: Bool { series.contains { !$0.values.isEmpty } }
   var body: some View {
     if series.contains(where: { $0.loading }) && !ready {
       LoadingShimmer(height: height)
     } else if !ready {
       if !compact { EmptyData(height: height) } else { Color.clear.frame(height: height) }
+    } else if compact {
+      Sparkline(series: series, timeline: timeline).frame(height: height).accessibilityHidden(true)
     } else {
       chart
     }
@@ -49,18 +74,18 @@ struct NativeTimeChart: View {
         ForEach(series) { s in
           ForEach(s.values) { p in
             if bars {
-              BarMark(x: .value("Date", Day.parse(p.date), unit: .day), y: .value(s.name, p.value))
+              BarMark(x: .value("Date", p.day, unit: .day), y: .value(s.name, p.value))
                 .foregroundStyle(s.color).cornerRadius(3)
             } else {
               LineMark(
-                x: .value("Date", Day.parse(p.date)), y: .value(s.name, p.value),
+                x: .value("Date", p.day), y: .value(s.name, p.value),
                 series: .value("Segment", s.id + String(p.segment))
               )
               .foregroundStyle(dots ? Color(hex: 0xb9bdc4) : s.color).lineStyle(
                 StrokeStyle(lineWidth: compact ? 2 : 2.5)
               ).interpolationMethod(dots ? .linear : .monotone)
               if dots {
-                PointMark(x: .value("Date", Day.parse(p.date)), y: .value(s.name, p.value))
+                PointMark(x: .value("Date", p.day), y: .value(s.name, p.value))
                   .foregroundStyle(s.color).symbolSize(38)
               }
             }
@@ -110,10 +135,8 @@ struct NativeTimeChart: View {
                 selected = nil
                 return
               }
-              selected = labels.min {
-                abs(Day.parse($0).timeIntervalSince(date))
-                  < abs(Day.parse($1).timeIntervalSince(date))
-              }
+              let nearest = timeline.nearest(to: date)
+              if nearest != selected { selected = nearest }
             case .ended: selected = nil
             }
           }
@@ -122,27 +145,7 @@ struct NativeTimeChart: View {
       .frame(height: height)
       .overlay(alignment: .topTrailing) {
         if let selected {
-          VStack(alignment: .leading, spacing: 8) {
-            Text(Day.label(selected)).font(Theme.body(12))
-            ForEach(series) { s in
-              HStack {
-                Circle().fill(s.color).frame(width: 6, height: 6)
-                Text(s.name)
-                Spacer()
-                if s.loading {
-                  LoadingShimmer(height: 12).frame(width: 40)
-                } else {
-                  Text(
-                    s.points.first { $0.date == selected }?.value.map {
-                      Analytics.number($0, digits: 2) + (s.unit.isEmpty ? "" : " " + s.unit)
-                    } ?? "Indisponible"
-                  ).monospacedDigit()
-                }
-              }
-            }
-          }.font(Theme.body(11)).padding(12).frame(width: 240).background(
-            Color(hex: 0x303135), in: RoundedRectangle(cornerRadius: 13)
-          ).allowsHitTesting(false).padding(6)
+          ChartTooltip(series: series, selected: selected).padding(6)
         }
       }
       .accessibilityLabel(series.map(\.name).joined(separator: ", "))
@@ -270,5 +273,86 @@ struct VideoScatterChart: View {
         ).allowsHitTesting(false)
       }
     }
+  }
+}
+
+/// Small card previews do not need a chart layout engine or pointer handling.
+private struct Sparkline: View {
+  let series: [PlotSeries]
+  let timeline: ChartTimeline
+  @State private var selected: String?
+  var body: some View {
+    GeometryReader { geometry in
+      Canvas { context, size in
+        let values = series.flatMap(\.values)
+        guard let first = timeline.dates.first, let last = timeline.dates.last,
+          let minimum = values.map(\.value).min(), let maximum = values.map(\.value).max()
+        else { return }
+        let duration = max(1, last.timeIntervalSince(first))
+        let span = max(1, maximum - minimum)
+        for series in series {
+          var path = Path()
+          var segment: Int?
+          for datum in series.values {
+            let point = CGPoint(
+              x: datum.day.timeIntervalSince(first) / duration * size.width,
+              y: maximum == minimum
+                ? size.height / 2
+                : 3 + (1 - (datum.value - minimum) / span) * max(0, size.height - 6)
+            )
+            if segment != datum.segment { path.move(to: point) } else { path.addLine(to: point) }
+            segment = datum.segment
+          }
+          context.stroke(
+            path, with: .color(series.color),
+            style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+        }
+      }
+      .contentShape(Rectangle())
+      .onContinuousHover { phase in
+        switch phase {
+        case .ended: selected = nil
+        case .active(let position):
+          guard let first = timeline.dates.first, let last = timeline.dates.last else { return }
+          let fraction = min(1, max(0, position.x / max(1, geometry.size.width)))
+          let day = first.addingTimeInterval(last.timeIntervalSince(first) * fraction)
+          let nearest = timeline.nearest(to: day)
+          if nearest != selected { selected = nearest }
+        }
+      }
+      .overlay(alignment: .bottomTrailing) {
+        if let selected {
+          ChartTooltip(series: series, selected: selected).offset(y: -geometry.size.height - 6)
+        }
+      }
+    }
+  }
+}
+
+private struct ChartTooltip: View {
+  let series: [PlotSeries]
+  let selected: String
+  var body: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      Text(Day.label(selected)).font(Theme.body(12))
+      ForEach(series) { s in
+        HStack {
+          Circle().fill(s.color).frame(width: 6, height: 6)
+          Text(s.name)
+          Spacer()
+          if s.loading {
+            LoadingShimmer(height: 12).frame(width: 40)
+          } else {
+            Text(
+              s.points.first { $0.date == selected }?.value.map {
+                Analytics.number($0, digits: 2) + (s.unit.isEmpty ? "" : " " + s.unit)
+              } ?? "Indisponible"
+            ).monospacedDigit()
+          }
+        }
+      }
+    }.font(Theme.body(11)).padding(12).frame(width: 240).background(
+      Color(hex: 0x303135), in: RoundedRectangle(cornerRadius: 13)
+    ).allowsHitTesting(false)
   }
 }
