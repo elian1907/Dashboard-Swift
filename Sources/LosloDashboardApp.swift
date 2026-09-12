@@ -85,7 +85,11 @@ struct RootView: View {
             GlassEffectContainer(spacing: 0) {
               VStack(spacing: 0) {
                 Color.clear.frame(height: 0).id("page-top")
-                content.padding(.horizontal, 26).padding(.bottom, 26).frame(maxWidth: 1700)
+                ProgressiveContent(identity: page) {
+                  PageLoadingView(page: $page)
+                } content: {
+                  content
+                }.padding(.horizontal, 26).padding(.bottom, 26).frame(maxWidth: 1700)
               }
             }
           }.scrollIndicators(.hidden)

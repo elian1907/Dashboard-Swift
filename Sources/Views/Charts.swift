@@ -65,8 +65,18 @@ struct NativeTimeChart: View {
     } else if compact {
       Sparkline(series: series, timeline: timeline).frame(height: height).accessibilityHidden(true)
     } else {
-      chart
+      ProgressiveContent(identity: presentationKey) {
+        LoadingShimmer(height: height)
+      } content: {
+        chart
+      }
     }
+  }
+  private var presentationKey: String {
+    [
+      String(bars), String(dots), labels.first ?? "", labels.last ?? "",
+      series.map { $0.id + ":" + $0.name }.joined(separator: "|"),
+    ].joined(separator: ";")
   }
   private var chart: some View {
     VStack(alignment: .leading, spacing: 12) {
@@ -193,22 +203,29 @@ struct NativeDonut: View {
     if total <= 0 {
       EmptyData(text: "Aucune répartition disponible", height: height)
     } else {
-      VStack(spacing: 16) {
-        Chart(valid) { item in
-          SectorMark(
-            angle: .value(item.label, item.value), innerRadius: .ratio(0.7), angularInset: 2
-          ).foregroundStyle(item.color).cornerRadius(4).opacity(
-            active == nil || active?.id == item.id ? 1 : 0.35)
-        }
-        .chartAngleSelection(value: $selected).chartLegend(.hidden).frame(height: height)
-        .overlay {
-          VStack(spacing: 4) {
-            Text(Analytics.number(active?.value ?? total)).font(Theme.heading(27))
-            Text(active?.label ?? "Total").font(Theme.body(11)).foregroundStyle(Theme.muted)
-          }.allowsHitTesting(false)
-        }
-        ForEach(items) { item in legendRow(item) }
+      ProgressiveContent(identity: "distribution") {
+        LoadingShimmer(height: height + CGFloat(items.count) * 30)
+      } content: {
+        distribution
       }
+    }
+  }
+  private var distribution: some View {
+    VStack(spacing: 16) {
+      Chart(valid) { item in
+        SectorMark(
+          angle: .value(item.label, item.value), innerRadius: .ratio(0.7), angularInset: 2
+        ).foregroundStyle(item.color).cornerRadius(4).opacity(
+          active == nil || active?.id == item.id ? 1 : 0.35)
+      }
+      .chartAngleSelection(value: $selected).chartLegend(.hidden).frame(height: height)
+      .overlay {
+        VStack(spacing: 4) {
+          Text(Analytics.number(active?.value ?? total)).font(Theme.heading(27))
+          Text(active?.label ?? "Total").font(Theme.body(11)).foregroundStyle(Theme.muted)
+        }.allowsHitTesting(false)
+      }
+      ForEach(items) { item in legendRow(item) }
     }
   }
 
@@ -234,6 +251,13 @@ struct VideoScatterChart: View {
   @State private var hovered: TikTokVideo?
   var valid: [TikTokVideo] { videos.filter { $0.views > 0 } }
   var body: some View {
+    ProgressiveContent(identity: "scatter") {
+      LoadingShimmer(height: 260)
+    } content: {
+      chart
+    }
+  }
+  private var chart: some View {
     Chart(valid) { v in
       PointMark(x: .value("Vues", v.views), y: .value("Engagement", v.engagement)).foregroundStyle(
         Theme.tiktok.opacity(0.8)

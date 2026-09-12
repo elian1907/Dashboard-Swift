@@ -158,41 +158,46 @@ import Observation
     if epoch == generation { refreshing = false }
   }
   func refreshPeriod() async {
+    let rc = RevenueService(config)
+    await refreshPeriod { key, range in
+      if key == "trials" {
+        return try await rc.chart(
+          "trial_conversion_rate", start: range.start, end: range.end, segment: "product_id")
+      }
+      return try await rc.chart("conversion_to_paying", start: range.start, end: range.end)
+    }
+  }
+
+  func refreshPeriod(
+    using fetch: @escaping @Sendable (String, PeriodRange) async throws -> ServiceResult<RCChart>
+  ) async {
     let epoch = UUID()
     periodGeneration = epoch
     let configEpoch = generation
-    let r = range
-    let rc = RevenueService(config)
+    let range = range
     trials = nil
     paying = nil
     loading.formUnion(["trials", "paying"])
-    async let t = rc.chart(
-      "trial_conversion_rate", start: r.start, end: r.end, segment: "product_id")
-    async let p = rc.chart("conversion_to_paying", start: r.start, end: r.end)
+    async let trialRequest: Void = loadPeriod(
+      "trials", epoch: epoch, configEpoch: configEpoch, range: range, fetch: fetch)
+    async let payingRequest: Void = loadPeriod(
+      "paying", epoch: epoch, configEpoch: configEpoch, range: range, fetch: fetch)
+    _ = await (trialRequest, payingRequest)
+  }
+
+  private func loadPeriod(
+    _ key: String, epoch: UUID, configEpoch: UUID, range: PeriodRange,
+    fetch: @Sendable (String, PeriodRange) async throws -> ServiceResult<RCChart>
+  ) async {
     do {
-      let result = try await t
-      if periodGeneration == epoch && generation == configEpoch && !Task.isCancelled {
-        trials = result.value
-        errors["trials"] = result.warning
-      }
+      let result = try await fetch(key, range)
+      guard periodGeneration == epoch, generation == configEpoch, !Task.isCancelled else { return }
+      if key == "trials" { trials = result.value } else { paying = result.value }
+      errors[key] = result.warning
     } catch {
-      if periodGeneration == epoch && generation == configEpoch && !Task.isCancelled {
-        errors["trials"] = error.localizedDescription
-      }
+      guard periodGeneration == epoch, generation == configEpoch, !Task.isCancelled else { return }
+      errors[key] = error.localizedDescription
     }
-    do {
-      let result = try await p
-      if periodGeneration == epoch && generation == configEpoch && !Task.isCancelled {
-        paying = result.value
-        errors["paying"] = result.warning
-      }
-    } catch {
-      if periodGeneration == epoch && generation == configEpoch && !Task.isCancelled {
-        errors["paying"] = error.localizedDescription
-      }
-    }
-    if periodGeneration == epoch && generation == configEpoch && !Task.isCancelled {
-      loading.subtract(["trials", "paying"])
-    }
+    if periodGeneration == epoch, generation == configEpoch { loading.remove(key) }
   }
 }

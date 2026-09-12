@@ -18,8 +18,10 @@
 		3954CFABCA05337A665240AE /* hanken.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2FC9C466616062FA32A0AA82 /* hanken.ttf */; };
 		4302C2E5888292554EA62196 /* AppleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E82276D34BEA78C55500985 /* AppleService.swift */; };
 		491608B3A25871D6F07EB299 /* TikTokService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84E0700B10BD2398884EF4D4 /* TikTokService.swift */; };
+		5CB5A8396AB31EA77EEBA481 /* PageLoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F79153D835F6DF3D4D20C522 /* PageLoadingView.swift */; };
 		5DBB82E0AF3BC6CE6BD78448 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78B23CCFB81DF06E526226BB /* Theme.swift */; };
 		6529B0953F54042C5641D556 /* API.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0761C899E63314AA14693081 /* API.swift */; };
+		70395A4BC3FC0568E3A3C033 /* ProgressiveLoadingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B311B24A245E2402332251 /* ProgressiveLoadingTests.swift */; };
 		81D8D01ECA4220C53C3B9D66 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4A9244CDA36048A029CF3B2 /* SettingsView.swift */; };
 		94B13A59DD2605D0F32ABE25 /* loslo-logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 17266AE27208CE2EC5AA3919 /* loslo-logo.png */; };
 		AA5AA85B890C5A2A630BBEA6 /* bricolage-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4B6D0241A587C2246143CAA2 /* bricolage-OFL.txt */; };
@@ -66,6 +68,7 @@
 		78B23CCFB81DF06E526226BB /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		84E0700B10BD2398884EF4D4 /* TikTokService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TikTokService.swift; sourceTree = "<group>"; };
 		911CB797194C0C43F63FD81F /* bricolage.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = bricolage.ttf; sourceTree = "<group>"; };
+		92B311B24A245E2402332251 /* ProgressiveLoadingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressiveLoadingTests.swift; sourceTree = "<group>"; };
 		954D6D7BCB0A06BF0C9EB2A1 /* world-atlas-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "world-atlas-LICENSE.txt"; sourceTree = "<group>"; };
 		A4A9244CDA36048A029CF3B2 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		A9156C14AC985CA35AAA8478 /* Analytics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Analytics.swift; sourceTree = "<group>"; };
@@ -73,6 +76,7 @@
 		AFE8A43F5BFC98FA483AC262 /* hanken-OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "hanken-OFL.txt"; sourceTree = "<group>"; };
 		B14D103214ED351057833B6A /* DashboardStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardStore.swift; sourceTree = "<group>"; };
 		F51F7C5F9CFB15B45A5FDDE1 /* Charts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Charts.swift; sourceTree = "<group>"; };
+		F79153D835F6DF3D4D20C522 /* PageLoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageLoadingView.swift; sourceTree = "<group>"; };
 		F8FADED95AF7E0BE0CC7C02E /* world-polygons.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "world-polygons.json"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -141,6 +145,7 @@
 			isa = PBXGroup;
 			children = (
 				5A1506C4C20A9B9D81A846D6 /* AnalyticsTests.swift */,
+				92B311B24A245E2402332251 /* ProgressiveLoadingTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -187,6 +192,7 @@
 				F51F7C5F9CFB15B45A5FDDE1 /* Charts.swift */,
 				1C577F1B3C93C06EF1398E14 /* GeographyView.swift */,
 				14E29654EF689FEEF0368D1B /* OverviewView.swift */,
+				F79153D835F6DF3D4D20C522 /* PageLoadingView.swift */,
 				1DAC96ABA998AE0A1BA40BB8 /* RevenueView.swift */,
 				A4A9244CDA36048A029CF3B2 /* SettingsView.swift */,
 				0F8EAB19A60423ACDE5EE125 /* TikTokView.swift */,
@@ -297,6 +303,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3485341D13D32995E1B6DF27 /* AnalyticsTests.swift in Sources */,
+				70395A4BC3FC0568E3A3C033 /* ProgressiveLoadingTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -315,6 +322,7 @@
 				F7AD5FB6034107DC47843C7F /* LocalStorage.swift in Sources */,
 				1D66D6841334ED0517BEB987 /* LosloDashboardApp.swift in Sources */,
 				DD05D7B46A8FE8F0BC88E6A0 /* OverviewView.swift in Sources */,
+				5CB5A8396AB31EA77EEBA481 /* PageLoadingView.swift in Sources */,
 				F7A45E1E60DC46E8EAC70F83 /* RevenueView.swift in Sources */,
 				81D8D01ECA4220C53C3B9D66 /* SettingsView.swift in Sources */,
 				5DBB82E0AF3BC6CE6BD78448 /* Theme.swift in Sources */,
