@@ -71,7 +71,11 @@ struct MetricRow: Layout {
 /// a destination has been laid out. Release/drag-out and keyboard activation stay native.
 struct DashboardButtonStyle: ButtonStyle {
   func makeBody(configuration: Configuration) -> some View {
-    configuration.label.opacity(configuration.isPressed ? 0.72 : 1)
+    // Glass is decorative: explicitly include the label's padding and spacers
+    // in the button's hit region, rather than only its visible text and icons.
+    configuration.label
+      .contentShape(.interaction, Rectangle())
+      .opacity(configuration.isPressed ? 0.72 : 1)
       .transaction { $0.animation = nil }
   }
 }
