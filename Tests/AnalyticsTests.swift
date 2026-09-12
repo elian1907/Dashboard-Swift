@@ -158,6 +158,24 @@ final class AnalyticsTests: XCTestCase {
     XCTAssertNil(ChartTimeline([]).nearest(to: Date()))
   }
 
+  func testDownloadScaleFitsThePeakWithoutClippingFutureValues() {
+    XCTAssertEqual(ChartScale.countUpperBound([9, 92, 419, 532]), 600)
+    XCTAssertEqual(ChartScale.countUpperBound([550]), 600)
+    XCTAssertEqual(ChartScale.countUpperBound([419]), 500)
+    XCTAssertEqual(ChartScale.countUpperBound([42]), 50)
+    XCTAssertEqual(ChartScale.countUpperBound([620]), 700)
+    for peak in [1.0, 50, 100, 532, 550, 600, 1_250, 12_000] {
+      XCTAssertGreaterThan(ChartScale.countUpperBound([peak]), peak)
+    }
+  }
+
+  func testDownloadScaleIgnoresUnavailableValuesAndKeepsAValidZeroRange() {
+    XCTAssertEqual(ChartScale.countUpperBound([]), 1)
+    XCTAssertEqual(ChartScale.countUpperBound([0, 0]), 1)
+    XCTAssertEqual(ChartScale.countUpperBound([.nan, .infinity, -.infinity, -1]), 1)
+    XCTAssertEqual(ChartScale.countUpperBound([.nan, 532, .infinity]), 600)
+  }
+
   func testPreparedChartKeepsGapsAndZeroValues() {
     let series = PlotSeries(
       id: "test", name: "Test", color: .blue,

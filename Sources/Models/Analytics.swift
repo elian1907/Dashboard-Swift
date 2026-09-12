@@ -312,6 +312,19 @@ struct GeographySnapshot {
   }
 }
 
+enum ChartScale {
+  /// Keep a zero baseline and a small amount of headroom above the recorded peak.
+  static func countUpperBound(_ values: [Double]) -> Double {
+    let peak = values.filter { $0.isFinite && $0 >= 0 }.max() ?? 0
+    guard peak > 0 else { return 1 }
+    let step = max(1, pow(10, floor(log10(peak))) / 2)
+    let padded = peak * 1.08
+    guard padded.isFinite else { return peak }
+    let upper = ceil(padded / step) * step
+    return upper.isFinite ? upper : peak
+  }
+}
+
 /// Sorted day positions are prepared once; hover only performs a binary search.
 struct ChartTimeline {
   let labels: [String]

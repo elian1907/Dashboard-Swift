@@ -43,10 +43,11 @@ struct NativeTimeChart: View {
   var dots = false
   var compact = false
   private let timeline: ChartTimeline
+  private let yUpperBound: Double?
   var labels: [String] { timeline.labels }
   init(
     series: [PlotSeries], height: CGFloat = 220, bars: Bool = false, dots: Bool = false,
-    compact: Bool = false
+    compact: Bool = false, fitToValues: Bool = false
   ) {
     self.series = series
     self.height = height
@@ -54,6 +55,8 @@ struct NativeTimeChart: View {
     self.dots = dots
     self.compact = compact
     timeline = ChartTimeline(series.flatMap { $0.points.map(\.date) })
+    yUpperBound =
+      fitToValues ? ChartScale.countUpperBound(series.flatMap { $0.values.map(\.value) }) : nil
   }
   var ready: Bool { series.contains { !$0.values.isEmpty } }
   var body: some View {
@@ -107,6 +110,7 @@ struct NativeTimeChart: View {
           labels.first ?? Day.key(Date()))...Day.parse(
             bars ? Day.shift(labels.last ?? Day.key(Date()), 1) : labels.last ?? Day.key(Date()))
       )
+      .modifier(FittedCountScale(upperBound: yUpperBound))
       .chartXAxis(compact ? .hidden : .automatic).chartYAxis(compact ? .hidden : .automatic)
       .chartLegend(.hidden)
       .chartXAxis {
@@ -121,7 +125,13 @@ struct NativeTimeChart: View {
       }
       .chartYAxis {
         if !compact {
-          AxisMarks(position: .leading, values: .automatic(desiredCount: 3)) { _ in
+          AxisMarks(
+            position: .leading,
+            values: .automatic(
+              desiredCount: yUpperBound == nil ? 3 : 4,
+              roundLowerBound: yUpperBound == nil ? nil : false,
+              roundUpperBound: yUpperBound == nil ? nil : false)
+          ) { _ in
             AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [3, 5])).foregroundStyle(
               .white.opacity(0.10))
             AxisValueLabel().font(Theme.body(10)).foregroundStyle(Theme.muted)
@@ -135,6 +145,17 @@ struct NativeTimeChart: View {
       .accessibilityLabel(series.map(\.name).joined(separator: ", "))
       .animateData(series)
       .animateData(dots)
+    }
+  }
+}
+
+private struct FittedCountScale: ViewModifier {
+  let upperBound: Double?
+  @ViewBuilder func body(content: Content) -> some View {
+    if let upperBound {
+      content.chartYScale(domain: 0...upperBound)
+    } else {
+      content
     }
   }
 }

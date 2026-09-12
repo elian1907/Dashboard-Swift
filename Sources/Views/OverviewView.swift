@@ -63,7 +63,9 @@ struct OverviewView: View {
               Spacer()
               Text("Nombre / jour").font(Theme.body(11)).foregroundStyle(Theme.muted)
             }
-            NativeTimeChart(series: activity, height: selected.contains("revenue") ? 220 : 440)
+            NativeTimeChart(
+              series: activity, height: selected.contains("revenue") ? 220 : 440,
+              fitToValues: selected.contains("downloads"))
           }
           if selected.contains("revenue") {
             HStack {
@@ -164,7 +166,8 @@ struct AcquisitionView: View {
             PlotSeries(
               id: name, name: name, color: color,
               points: cumulative ? Analytics.cumulative(points) : points, loading: pending)
-          ], height: 480, bars: !users && !cumulative, dots: users && !cumulative)
+          ], height: 480, bars: !users && !cumulative, dots: users && !cumulative,
+          fitToValues: !users && !cumulative)
       }
     }
   }
