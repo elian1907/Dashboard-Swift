@@ -138,7 +138,10 @@ private struct DashboardSidebar: View {
               }.padding(.horizontal, 14).frame(
                 maxWidth: .infinity, minHeight: 43, alignment: .leading
               )
-              .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 14))
+              .glassEffect(
+                Glass.clear.tint(page == target ? .white.opacity(0.16) : nil).interactive(),
+                in: .rect(cornerRadius: 14)
+              )
             }
             .buttonStyle(DashboardButtonStyle())
             .foregroundStyle(page == target ? Theme.text : Theme.muted)
@@ -148,10 +151,15 @@ private struct DashboardSidebar: View {
       }
       Spacer()
       SettingsLink {
-        Label("Réglages", systemImage: "gearshape").font(Theme.body(12)).foregroundStyle(
-          Theme.muted
-        ).padding(12)
-      }.buttonStyle(.glass).buttonBorderShape(.capsule)
+        HStack(spacing: 11) {
+          Image(systemName: "gearshape").font(.system(size: 15, weight: .semibold)).frame(width: 19)
+          Text("Réglages").font(Theme.body(13))
+          Spacer(minLength: 0)
+        }.padding(.horizontal, 14).frame(
+          maxWidth: .infinity, minHeight: 43, alignment: .leading
+        )
+        .glassEffect(.clear.interactive(), in: .rect(cornerRadius: 14))
+      }.buttonStyle(DashboardButtonStyle()).foregroundStyle(Theme.muted)
     }.padding(12).frame(width: 225)
       .background {
         RoundedRectangle(cornerRadius: 24).fill(.clear)
