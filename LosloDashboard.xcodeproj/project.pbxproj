@@ -7,12 +7,16 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		00D77001B1D54E6861DE4820 /* NativeGlobe.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAB65CAFECD82473BDE25BD7 /* NativeGlobe.swift */; };
+		013427FF8D32F9E621E1E67B /* GlobeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3839D1A5EAE560D8CDDCEAE /* GlobeTests.swift */; };
 		019E80B5976DF4BFADF80445 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 3E3F1687FAD5B551865757DA /* libz.tbd */; };
 		0247693409AD3EEBC6CF350E /* world-atlas-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 954D6D7BCB0A06BF0C9EB2A1 /* world-atlas-LICENSE.txt */; };
 		09F9510460E9BF50FF7969B5 /* Charts.swift in Sources */ = {isa = PBXBuildFile; fileRef = F51F7C5F9CFB15B45A5FDDE1 /* Charts.swift */; };
 		0A63AEE28F4FBD79495EA31A /* GeographyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C577F1B3C93C06EF1398E14 /* GeographyView.swift */; };
 		15A50B9CAE0D3A6CAF6535B9 /* Countries.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE99D60A3A3FF8C511E93838 /* Countries.swift */; };
+		1900082AEF6BFE2CB3D2B9B8 /* globe-centroids.json in Resources */ = {isa = PBXBuildFile; fileRef = 6C48A9A7733C088EC8EB3450 /* globe-centroids.json */; };
 		1D66D6841334ED0517BEB987 /* LosloDashboardApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33AC4C3573EC5BAA5BE5EA9D /* LosloDashboardApp.swift */; };
+		29EDB45357BE6001F155BA52 /* GlobeGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C3A2C7DE5C32C522E2A00DC /* GlobeGeometry.swift */; };
 		2A92F47CD058604BF5955533 /* JWT.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3961BCAD7FD3053E5C186940 /* JWT.swift */; };
 		3485341D13D32995E1B6DF27 /* AnalyticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1506C4C20A9B9D81A846D6 /* AnalyticsTests.swift */; };
 		3954CFABCA05337A665240AE /* hanken.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2FC9C466616062FA32A0AA82 /* hanken.ttf */; };
@@ -28,6 +32,7 @@
 		AB4FBF7F2A3A25CEA26DFF9F /* world-polygons.json in Resources */ = {isa = PBXBuildFile; fileRef = F8FADED95AF7E0BE0CC7C02E /* world-polygons.json */; };
 		AD9E7AB674F03D3AD0830899 /* hanken-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = AFE8A43F5BFC98FA483AC262 /* hanken-OFL.txt */; };
 		BF1922FACD4A610BE3E6CF6B /* DashboardStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14D103214ED351057833B6A /* DashboardStore.swift */; };
+		C37E9CD4FAE4ABD58CBA6A45 /* globe-mesh.bin in Resources */ = {isa = PBXBuildFile; fileRef = EFDE818C937A5735B5E02099 /* globe-mesh.bin */; };
 		CD0BF6FF2865633DBE92FD36 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 565C9CC1D22C0AB2D381A528 /* AppIcon.icns */; };
 		D636C0A824C4EB4A8F98FF5A /* DashboardPageHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = C84F0A625C4F15BA61E56E17 /* DashboardPageHost.swift */; };
 		DD05D7B46A8FE8F0BC88E6A0 /* OverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14E29654EF689FEEF0368D1B /* OverviewView.swift */; };
@@ -54,6 +59,7 @@
 		145948BBB5C45234F6A5E5C6 /* LocalStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalStorage.swift; sourceTree = "<group>"; };
 		14E29654EF689FEEF0368D1B /* OverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverviewView.swift; sourceTree = "<group>"; };
 		17266AE27208CE2EC5AA3919 /* loslo-logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "loslo-logo.png"; sourceTree = "<group>"; };
+		1C3A2C7DE5C32C522E2A00DC /* GlobeGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobeGeometry.swift; sourceTree = "<group>"; };
 		1C577F1B3C93C06EF1398E14 /* GeographyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeographyView.swift; sourceTree = "<group>"; };
 		1DAC96ABA998AE0A1BA40BB8 /* RevenueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevenueView.swift; sourceTree = "<group>"; };
 		2CA87AC8862DA4E5C79F9C9F /* LosloDashboardTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LosloDashboardTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -66,6 +72,7 @@
 		58DA15C963E412A7BFDBCAF7 /* Loslo Dashboard.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Loslo Dashboard.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5A1506C4C20A9B9D81A846D6 /* AnalyticsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsTests.swift; sourceTree = "<group>"; };
 		5E82276D34BEA78C55500985 /* AppleService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleService.swift; sourceTree = "<group>"; };
+		6C48A9A7733C088EC8EB3450 /* globe-centroids.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "globe-centroids.json"; sourceTree = "<group>"; };
 		78B23CCFB81DF06E526226BB /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		84E0700B10BD2398884EF4D4 /* TikTokService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TikTokService.swift; sourceTree = "<group>"; };
 		911CB797194C0C43F63FD81F /* bricolage.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = bricolage.ttf; sourceTree = "<group>"; };
@@ -76,7 +83,10 @@
 		AE99D60A3A3FF8C511E93838 /* Countries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Countries.swift; sourceTree = "<group>"; };
 		AFE8A43F5BFC98FA483AC262 /* hanken-OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "hanken-OFL.txt"; sourceTree = "<group>"; };
 		B14D103214ED351057833B6A /* DashboardStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardStore.swift; sourceTree = "<group>"; };
+		B3839D1A5EAE560D8CDDCEAE /* GlobeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobeTests.swift; sourceTree = "<group>"; };
+		BAB65CAFECD82473BDE25BD7 /* NativeGlobe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeGlobe.swift; sourceTree = "<group>"; };
 		C84F0A625C4F15BA61E56E17 /* DashboardPageHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardPageHost.swift; sourceTree = "<group>"; };
+		EFDE818C937A5735B5E02099 /* globe-mesh.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "globe-mesh.bin"; sourceTree = "<group>"; };
 		F51F7C5F9CFB15B45A5FDDE1 /* Charts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Charts.swift; sourceTree = "<group>"; };
 		F79153D835F6DF3D4D20C522 /* PageLoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageLoadingView.swift; sourceTree = "<group>"; };
 		F8FADED95AF7E0BE0CC7C02E /* world-polygons.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "world-polygons.json"; sourceTree = "<group>"; };
@@ -138,6 +148,7 @@
 			children = (
 				AE99D60A3A3FF8C511E93838 /* Countries.swift */,
 				B14D103214ED351057833B6A /* DashboardStore.swift */,
+				1C3A2C7DE5C32C522E2A00DC /* GlobeGeometry.swift */,
 				78B23CCFB81DF06E526226BB /* Theme.swift */,
 			);
 			path = Support;
@@ -147,6 +158,7 @@
 			isa = PBXGroup;
 			children = (
 				5A1506C4C20A9B9D81A846D6 /* AnalyticsTests.swift */,
+				B3839D1A5EAE560D8CDDCEAE /* GlobeTests.swift */,
 				92B311B24A245E2402332251 /* ProgressiveLoadingTests.swift */,
 			);
 			path = Tests;
@@ -179,6 +191,8 @@
 				565C9CC1D22C0AB2D381A528 /* AppIcon.icns */,
 				4B6D0241A587C2246143CAA2 /* bricolage-OFL.txt */,
 				911CB797194C0C43F63FD81F /* bricolage.ttf */,
+				6C48A9A7733C088EC8EB3450 /* globe-centroids.json */,
+				EFDE818C937A5735B5E02099 /* globe-mesh.bin */,
 				AFE8A43F5BFC98FA483AC262 /* hanken-OFL.txt */,
 				2FC9C466616062FA32A0AA82 /* hanken.ttf */,
 				17266AE27208CE2EC5AA3919 /* loslo-logo.png */,
@@ -194,6 +208,7 @@
 				F51F7C5F9CFB15B45A5FDDE1 /* Charts.swift */,
 				C84F0A625C4F15BA61E56E17 /* DashboardPageHost.swift */,
 				1C577F1B3C93C06EF1398E14 /* GeographyView.swift */,
+				BAB65CAFECD82473BDE25BD7 /* NativeGlobe.swift */,
 				14E29654EF689FEEF0368D1B /* OverviewView.swift */,
 				F79153D835F6DF3D4D20C522 /* PageLoadingView.swift */,
 				1DAC96ABA998AE0A1BA40BB8 /* RevenueView.swift */,
@@ -290,6 +305,8 @@
 				CD0BF6FF2865633DBE92FD36 /* AppIcon.icns in Resources */,
 				AA5AA85B890C5A2A630BBEA6 /* bricolage-OFL.txt in Resources */,
 				FFB8F986906B0CD6B92E40B0 /* bricolage.ttf in Resources */,
+				1900082AEF6BFE2CB3D2B9B8 /* globe-centroids.json in Resources */,
+				C37E9CD4FAE4ABD58CBA6A45 /* globe-mesh.bin in Resources */,
 				AD9E7AB674F03D3AD0830899 /* hanken-OFL.txt in Resources */,
 				3954CFABCA05337A665240AE /* hanken.ttf in Resources */,
 				94B13A59DD2605D0F32ABE25 /* loslo-logo.png in Resources */,
@@ -306,6 +323,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3485341D13D32995E1B6DF27 /* AnalyticsTests.swift in Sources */,
+				013427FF8D32F9E621E1E67B /* GlobeTests.swift in Sources */,
 				70395A4BC3FC0568E3A3C033 /* ProgressiveLoadingTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -322,9 +340,11 @@
 				D636C0A824C4EB4A8F98FF5A /* DashboardPageHost.swift in Sources */,
 				BF1922FACD4A610BE3E6CF6B /* DashboardStore.swift in Sources */,
 				0A63AEE28F4FBD79495EA31A /* GeographyView.swift in Sources */,
+				29EDB45357BE6001F155BA52 /* GlobeGeometry.swift in Sources */,
 				2A92F47CD058604BF5955533 /* JWT.swift in Sources */,
 				F7AD5FB6034107DC47843C7F /* LocalStorage.swift in Sources */,
 				1D66D6841334ED0517BEB987 /* LosloDashboardApp.swift in Sources */,
+				00D77001B1D54E6861DE4820 /* NativeGlobe.swift in Sources */,
 				DD05D7B46A8FE8F0BC88E6A0 /* OverviewView.swift in Sources */,
 				5CB5A8396AB31EA77EEBA481 /* PageLoadingView.swift in Sources */,
 				F7A45E1E60DC46E8EAC70F83 /* RevenueView.swift in Sources */,

@@ -232,7 +232,7 @@ struct SalesArchive: Codable, Sendable {
     )
   }
 }
-struct CountryRow: Identifiable, Hashable {
+struct CountryRow: Identifiable, Hashable, Sendable {
   let code: String
   let units: Double
   var id: String { code }

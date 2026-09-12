@@ -3,6 +3,8 @@ import SwiftUI
 struct GeographyView: View {
   @Environment(DashboardStore.self) private var store
   @State private var search = ""
+  @State private var page = 0
+  private let pageSize = 15
   var pending: Bool { store.apple == nil && store.busy("apple") }
   var body: some View {
     let report = store.geography
@@ -10,6 +12,9 @@ struct GeographyView: View {
       search.isEmpty || $0.name.localizedCaseInsensitiveContains(search)
         || $0.code.localizedCaseInsensitiveContains(search)
     }
+    let pageCount = max(1, (rows.count + pageSize - 1) / pageSize)
+    let currentPage = min(page, pageCount - 1)
+    let displayedRows = Array(rows.dropFirst(currentPage * pageSize).prefix(pageSize))
     let total = report.total
     let previous = report.previous
     return HStack(alignment: .top, spacing: 18) {
@@ -21,7 +26,7 @@ struct GeographyView: View {
             width: 200)
         }
         if pending {
-          LoadingShimmer(height: 580)
+          LoadingShimmer(height: 465)
         } else {
           LazyVStack(spacing: 16) {
             HStack(spacing: 18) {
@@ -30,9 +35,10 @@ struct GeographyView: View {
               Text("Part").frame(width: 62, alignment: .trailing)
               Text("Évolution").frame(width: 74, alignment: .trailing)
             }.font(Theme.body(10)).foregroundStyle(Theme.muted)
-            ForEach(rows) { c in
+            ForEach(displayedRows) { c in
               HStack(spacing: 18) {
-                Text(c.flag + "  " + c.name).frame(maxWidth: .infinity, alignment: .leading)
+                Text(c.flag + "  " + c.name).lineLimit(1).minimumScaleFactor(0.85).frame(
+                  maxWidth: .infinity, alignment: .leading)
                 AnimatedValue(Analytics.number(c.units)).frame(width: 105, alignment: .trailing)
                 AnimatedValue(
                   report.missing == 0 && total > 0
@@ -45,8 +51,18 @@ struct GeographyView: View {
                 .frame(width: 74, alignment: .trailing)
               }
             }
-          }.font(Theme.body(12)).monospacedDigit().animateData(rows.map(\.id))
+          }.font(Theme.body(12)).monospacedDigit().animateData(displayedRows.map(\.id))
           if rows.isEmpty { EmptyData(text: "Aucun pays pour cette sélection", height: 400) }
+          if pageCount > 1 {
+            HStack {
+              Spacer()
+              Button("Précédent") { page = currentPage - 1 }.disabled(currentPage == 0)
+              AnimatedValue("\(currentPage + 1) / \(pageCount)").monospacedDigit()
+              Button("Suivant") { page = currentPage + 1 }.disabled(currentPage == pageCount - 1)
+            }.font(Theme.body(12)).buttonStyle(.glass).buttonBorderShape(.capsule)
+              .accessibilityElement(children: .contain).accessibilityLabel(
+                "Pages du classement des pays")
+          }
         }
       }
       VStack(spacing: 18) {
@@ -59,15 +75,10 @@ struct GeographyView: View {
             EmptyData(text: "Répartition indisponible", height: 280)
           }
         }
-        GlassPanel {
-          if pending {
-            LoadingShimmer(height: 300)
-          } else {
-            NativeGlobe(countries: report.rows).frame(height: 330)
-          }
-        }
+        NativeGlobe(countries: report.rows)
       }.frame(width: 390)
-    }
+    }.onChange(of: search) { page = 0 }
+      .onChange(of: store.period) { page = 0 }
   }
   func distribution(_ rows: [CountryRow]) -> [DonutItem] {
     var list = Array(rows.prefix(5).enumerated()).map { i, c in
@@ -78,103 +89,5 @@ struct GeographyView: View {
       list.append(DonutItem(id: "other", label: "Autres pays", value: rest, color: Theme.other))
     }
     return list
-  }
-}
-struct NativeGlobe: View {
-  var countries: [CountryRow]
-  @State private var longitude = 0.0
-  @State private var dragBase = 0.0
-  @State private var hovered: CountryRow?
-  private static let polygons: [[[Double]]] = {
-    guard let url = Bundle.main.url(forResource: "world-polygons", withExtension: "json"),
-      let data = try? Data(contentsOf: url)
-    else { return [] }
-    return (try? JSONDecoder().decode([[[Double]]].self, from: data)) ?? []
-  }()
-  func project(lon: Double, lat: Double, size: CGSize) -> (CGPoint, Double) {
-    let r = min(size.width, size.height) * 0.45
-    let l = (lon + longitude) * Double.pi / 180
-    let p = lat * Double.pi / 180
-    let tilt = 15 * Double.pi / 180
-    let x = cos(p) * sin(l)
-    let y = sin(p) * cos(tilt) - cos(p) * cos(l) * sin(tilt)
-    let z = sin(p) * sin(tilt) + cos(p) * cos(l) * cos(tilt)
-    return (CGPoint(x: size.width / 2 + r * x, y: size.height / 2 - r * y), z)
-  }
-  var body: some View {
-    GeometryReader { geo in
-      DataCrossfade(value: countries) {
-        Canvas { context, size in
-          let r = min(size.width, size.height) * 0.45
-          let rect = CGRect(
-            x: size.width / 2 - r, y: size.height / 2 - r, width: r * 2, height: r * 2)
-          let sphere = Path(ellipseIn: rect)
-          context.fill(
-            sphere,
-            with: .radialGradient(
-              Gradient(colors: [Color(hex: 0x444950), Color(hex: 0x25272b)]),
-              center: CGPoint(x: size.width * 0.4, y: size.height * 0.3), startRadius: 0,
-              endRadius: r * 1.8))
-          context.clip(to: sphere)
-          for polygon in Self.polygons {
-            var path = Path()
-            var drawing = false
-            for point in polygon {
-              let (p, z) = project(lon: point[0], lat: point[1], size: size)
-              if z > 0 {
-                if drawing {
-                  path.addLine(to: p)
-                } else {
-                  path.move(to: p)
-                  drawing = true
-                }
-              } else if drawing {
-                path.closeSubpath()
-                drawing = false
-              }
-            }
-            if drawing { path.closeSubpath() }
-            context.fill(path, with: .color(Color(hex: 0x828a97).opacity(0.55)))
-          }
-          let maxValue = max(1, countries.map(\.units).max() ?? 1)
-          for country in countries {
-            guard let c = Countries.centroid[country.code] else { continue }
-            let (p, z) = project(lon: c.longitude, lat: c.latitude, size: size)
-            guard z > 0 else { continue }
-            let radius = 3 + sqrt(max(0, country.units) / maxValue) * 6
-            context.fill(
-              Path(
-                ellipseIn: CGRect(
-                  x: p.x - radius, y: p.y - radius, width: radius * 2, height: radius * 2)),
-              with: .color(Theme.downloads))
-          }
-        }
-      }.contentShape(Rectangle()).gesture(
-        DragGesture().onChanged { longitude = dragBase + $0.translation.width * 0.5 }.onEnded { _ in
-          dragBase = longitude
-        }
-      )
-      .onContinuousHover { phase in
-        switch phase {
-        case .ended: hovered = nil
-        case .active(let position):
-          hovered = countries.first { country in
-            guard let c = Countries.centroid[country.code] else { return false }
-            let (p, z) = project(lon: c.longitude, lat: c.latitude, size: geo.size)
-            return z > 0 && hypot(p.x - position.x, p.y - position.y) < 13
-          }
-        }
-      }
-      .overlay(alignment: .bottom) {
-        if let hovered {
-          Text(hovered.flag + " " + hovered.name + " · " + Analytics.number(hovered.units)).font(
-            Theme.body(12)
-          ).padding(10).background(.regularMaterial, in: Capsule()).allowsHitTesting(false)
-        }
-      }
-      .accessibilityLabel(
-        "Globe des téléchargements. Les mêmes données sont disponibles dans le classement des pays."
-      )
-    }
   }
 }
