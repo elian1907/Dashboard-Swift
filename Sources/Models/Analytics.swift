@@ -295,6 +295,11 @@ struct GeographySnapshot {
   let missing: Int
   let previous: [String: Double]
   let total: Double
+  // A missing daily report does not invalidate the distribution of recorded downloads.
+  // Keep `missing` separate so coverage and period comparisons remain accurate.
+  var canShowDistribution: Bool {
+    total.isFinite && total > 0 && rows.allSatisfy { $0.units.isFinite && $0.units >= 0 }
+  }
   init(archive: SalesArchive?, range: PeriodRange) {
     let current = archive?.countries(range.labels, appID: archive?.selectedAppId)
     rows = current?.rows ?? []

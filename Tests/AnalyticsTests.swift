@@ -56,6 +56,74 @@ final class AnalyticsTests: XCTestCase {
     XCTAssertEqual(r.rows.first?.units, 5)
     XCTAssertEqual(r.missing, 1)
   }
+  func testGeographyKeepsRecordedDistributionWhenAnOlderReportIsMissing() {
+    let launch = "2026-06-14"
+    var archive = SalesArchive(
+      selectedAppId: "111",
+      reports: Dictionary(
+        uniqueKeysWithValues: Day.range(launch, "2026-09-11").map { day in
+          (
+            day,
+            SalesReport(
+              checkedAt: 0,
+              apps: [
+                "111": AppDay(title: "Loslo", units: 5, countries: ["FR": 4, "US": 1]),
+                "222": AppDay(title: "Other", units: 1000, countries: ["FR": 1000]),
+              ])
+          )
+        }))
+    archive.reports["2026-06-24"] = SalesReport(checkedAt: 0, apps: nil)
+
+    for period in Period.allCases {
+      let range = PeriodRange(period, launch: launch, today: "2026-09-12")
+      let snapshot = GeographySnapshot(archive: archive, range: range)
+      let missing = range.labels.contains("2026-06-24") ? 1 : 0
+      let recordedDays = range.labels.count - missing
+      XCTAssertEqual(snapshot.missing, missing)
+      XCTAssertTrue(snapshot.canShowDistribution, "An older gap must not hide recorded countries.")
+      XCTAssertEqual(snapshot.total, Double(recordedDays * 5))
+      XCTAssertEqual(snapshot.rows.first?.units, Double(recordedDays * 4))
+      XCTAssertEqual(snapshot.rows.first!.units / snapshot.total, 0.8, accuracy: 0.00001)
+    }
+    let points = archive.points(appID: "111", launch: launch)
+    XCTAssertNil(points.first { $0.date == "2026-06-24" }?.value)
+  }
+
+  func testGeographyDoesNotInventADistributionWithoutRecordedDownloads() {
+    let range = PeriodRange(.all, launch: "2026-06-14", today: "2026-06-15")
+    let missing = GeographySnapshot(archive: nil, range: range)
+    XCTAssertEqual(missing.missing, 1)
+    XCTAssertFalse(missing.canShowDistribution)
+
+    let zero = GeographySnapshot(
+      archive: SalesArchive(
+        selectedAppId: "111",
+        reports: [
+          "2026-06-14": SalesReport(checkedAt: 0, apps: [:])
+        ]), range: range)
+    XCTAssertEqual(zero.missing, 0)
+    XCTAssertEqual(zero.total, 0)
+    XCTAssertFalse(zero.canShowDistribution)
+  }
+
+  func testGeographyRejectsInvalidPieValuesAndIncompleteComparisons() {
+    let range = PeriodRange(.all, launch: "2026-06-14", today: "2026-06-15")
+    for units in [-1.0, Double.nan, Double.infinity] {
+      let snapshot = GeographySnapshot(
+        archive: SalesArchive(
+          selectedAppId: "111",
+          reports: [
+            "2026-06-14": SalesReport(
+              checkedAt: 0,
+              apps: [
+                "111": AppDay(title: "Loslo", units: 4, countries: ["FR": 5, "US": units])
+              ])
+          ]), range: range)
+      XCTAssertFalse(snapshot.canShowDistribution)
+      XCTAssertTrue(snapshot.previous.isEmpty, "Missing comparison reports must stay unknown.")
+    }
+  }
+
   func testRPMUsesFinishedTrialsAndOfferPrices() {
     let offer = JSONValue.object([
       "Conversions": .number(3), "Expirations": .number(1), "Pending": .number(2),

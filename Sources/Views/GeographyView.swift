@@ -17,6 +17,7 @@ struct GeographyView: View {
     let displayedRows = Array(rows.dropFirst(currentPage * pageSize).prefix(pageSize))
     let total = report.total
     let previous = report.previous
+    let hasDistribution = report.canShowDistribution
     return HStack(alignment: .top, spacing: 18) {
       GlassPanel {
         HStack {
@@ -33,6 +34,7 @@ struct GeographyView: View {
               Text("Pays").frame(maxWidth: .infinity, alignment: .leading)
               Text("Téléchargements").frame(width: 105, alignment: .trailing)
               Text("Part").frame(width: 62, alignment: .trailing)
+                .help("Part des téléchargements recensés dans les rapports disponibles.")
               Text("Évolution").frame(width: 74, alignment: .trailing)
             }.font(Theme.body(10)).foregroundStyle(Theme.muted)
             ForEach(displayedRows) { c in
@@ -41,7 +43,7 @@ struct GeographyView: View {
                   maxWidth: .infinity, alignment: .leading)
                 AnimatedValue(Analytics.number(c.units)).frame(width: 105, alignment: .trailing)
                 AnimatedValue(
-                  report.missing == 0 && total > 0
+                  hasDistribution
                     ? Analytics.number(c.units / total * 100, digits: 1) + " %" : "—"
                 )
                 .frame(width: 62, alignment: .trailing)
@@ -69,8 +71,13 @@ struct GeographyView: View {
         GlassPanel(title: "Répartition des téléchargements") {
           if pending {
             LoadingShimmer(height: 280)
-          } else if report.missing == 0, report.rows.allSatisfy({ $0.units >= 0 }) {
-            NativeDonut(items: distribution(report.rows), height: 170)
+          } else if hasDistribution {
+            NativeDonut(
+              items: distribution(report.rows), height: 170,
+              totalLabel: report.missing == 0 ? "Total" : "Recensés",
+              totalHelp:
+                "Répartition des téléchargements recensés : \(store.range.labels.count - report.missing) jours de rapports Apple disponibles sur \(store.range.labels.count)."
+            )
           } else {
             EmptyData(text: "Répartition indisponible", height: 280)
           }

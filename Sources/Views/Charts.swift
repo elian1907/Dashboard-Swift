@@ -210,6 +210,8 @@ struct DonutItem: Identifiable, Equatable {
 struct NativeDonut: View {
   var items: [DonutItem]
   var height: CGFloat = 190
+  var totalLabel = "Total"
+  var totalHelp = ""
   @State private var selected: Double?
   @State private var hovered: String?
   var valid: [DonutItem] { items.filter { $0.value.isFinite && $0.value > 0 } }
@@ -249,11 +251,12 @@ struct NativeDonut: View {
           active == nil || active?.id == item.id ? 1 : 0.35)
       }
       .chartAngleSelection(value: $selected).chartLegend(.hidden).frame(height: height)
+      .help(totalHelp)
       .animateData(items)
       .overlay {
         VStack(spacing: 4) {
           AnimatedValue(Analytics.number(active?.value ?? total)).font(Theme.heading(27))
-          Text(active?.label ?? "Total").font(Theme.body(11)).foregroundStyle(Theme.muted)
+          Text(active?.label ?? totalLabel).font(Theme.body(11)).foregroundStyle(Theme.muted)
         }.allowsHitTesting(false)
       }
       ForEach(items) { item in legendRow(item) }
