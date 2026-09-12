@@ -7,6 +7,7 @@ struct NativeGlobe: View {
   @State private var snapshot: GlobeSnapshot?
   @State private var failed = false
   @State private var paused = false
+  @FocusState private var focused: Bool
   @State private var visible = false
   @State private var hovering = false
   @State private var hovered: CountryRow?
@@ -18,121 +19,118 @@ struct NativeGlobe: View {
   private var now: TimeInterval { Date.timeIntervalSinceReferenceDate }
 
   var body: some View {
-    VStack(spacing: 8) {
-      HStack {
-        Spacer()
-        Button(paused ? "Reprendre la rotation" : "Mettre en pause") { paused.toggle() }
-          .font(Theme.body(11)).buttonStyle(.glass).buttonBorderShape(.capsule)
-          .disabled(reduceMotion || snapshot == nil)
-      }
-      GeometryReader { geometry in
-        ZStack {
-          if let snapshot {
-            TimelineView(.animation(minimumInterval: 1 / 30, paused: !motion.spinning)) {
-              timeline in
-              let yaw = motion.angle(at: timeline.date.timeIntervalSinceReferenceDate)
-              let pitch = motion.pitch
-              DataCrossfade(value: snapshot.countries) {
-                Canvas(rendersAsynchronously: true) { context, size in
-                  context.withCGContext { cg in
-                    GlobeRenderer.draw(snapshot, in: cg, size: size, yaw: yaw, pitch: pitch)
-                  }
+    GeometryReader { geometry in
+      ZStack {
+        if let snapshot {
+          TimelineView(.animation(minimumInterval: 1 / 30, paused: !motion.spinning)) {
+            timeline in
+            let yaw = motion.angle(at: timeline.date.timeIntervalSinceReferenceDate)
+            let pitch = motion.pitch
+            DataCrossfade(value: snapshot.countries) {
+              Canvas(rendersAsynchronously: true) { context, size in
+                context.withCGContext { cg in
+                  GlobeRenderer.draw(snapshot, in: cg, size: size, yaw: yaw, pitch: pitch)
                 }
               }
             }
-          } else if failed {
-            EmptyData(text: "Globe indisponible", height: 300)
-          } else {
-            LoadingShimmer(height: 300).clipShape(Circle()).padding(10)
           }
+        } else if failed {
+          EmptyData(text: "Globe indisponible", height: 300)
+        } else {
+          LoadingShimmer(height: 300).clipShape(Circle()).padding(10)
         }
-        .contentShape(Circle())
-        .gesture(
-          DragGesture(minimumDistance: 0)
-            .onChanged { value in
-              if dragOrigin == nil {
-                dragOrigin = (motion.angle(at: now), motion.pitch)
-                motion.setSpinning(false, at: now)
-              }
-              guard let origin = dragOrigin else { return }
-              hovered = nil
-              motion.orient(
-                yaw: origin.yaw - value.translation.width * 0.35,
-                pitch: origin.pitch + value.translation.height * 0.35, at: now)
+      }
+      .contentShape(Circle())
+      .gesture(
+        DragGesture(minimumDistance: 0)
+          .onChanged { value in
+            if dragOrigin == nil {
+              dragOrigin = (motion.angle(at: now), motion.pitch)
+              motion.setSpinning(false, at: now)
             }
-            .onEnded { _ in dragOrigin = nil }
-        )
-        .onContinuousHover { phase in
-          switch phase {
-          case .ended:
-            hovering = false
+            guard let origin = dragOrigin else { return }
             hovered = nil
-          case .active(let location):
-            hovering = true
-            guard dragOrigin == nil, let snapshot else { return }
-            let projection = GlobeProjection(
-              size: geometry.size, yaw: motion.angle(at: now), pitch: motion.pitch)
-            var nearest: CountryRow?
-            var nearestDistance = 15.0
-            for marker in snapshot.markers {
-              let point = projection.project(marker.position)
-              guard point.depth > 0.03 else { continue }
-              let distance = hypot(point.point.x - location.x, point.point.y - location.y)
-              if distance < nearestDistance {
-                nearest = marker.country
-                nearestDistance = distance
-              }
+            motion.orient(
+              yaw: origin.yaw - value.translation.width * 0.35,
+              pitch: origin.pitch + value.translation.height * 0.35, at: now)
+          }
+          .onEnded { _ in dragOrigin = nil }
+      )
+      .onContinuousHover { phase in
+        switch phase {
+        case .ended:
+          hovering = false
+          hovered = nil
+        case .active(let location):
+          hovering = true
+          guard dragOrigin == nil, let snapshot else { return }
+          let projection = GlobeProjection(
+            size: geometry.size, yaw: motion.angle(at: now), pitch: motion.pitch)
+          var nearest: CountryRow?
+          var nearestDistance = 15.0
+          for marker in snapshot.markers {
+            let point = projection.project(marker.position)
+            guard point.depth > 0.03 else { continue }
+            let distance = hypot(point.point.x - location.x, point.point.y - location.y)
+            if distance < nearestDistance {
+              nearest = marker.country
+              nearestDistance = distance
             }
-            if hovered?.id != nearest?.id { hovered = nearest }
           }
+          if hovered?.id != nearest?.id { hovered = nearest }
         }
-        .overlay(alignment: .bottom) {
-          if let hovered {
-            VStack(spacing: 4) {
-              Text(hovered.flag + " " + hovered.name)
-              Text(Analytics.number(hovered.units) + " téléchargements").foregroundStyle(
-                Theme.muted)
-            }.font(Theme.body(12)).padding(12)
-              .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
-              .allowsHitTesting(false)
-          }
+      }
+      .overlay(alignment: .bottom) {
+        if let hovered {
+          VStack(spacing: 4) {
+            Text(hovered.flag + " " + hovered.name)
+            Text(Analytics.number(hovered.units) + " téléchargements").foregroundStyle(
+              Theme.muted)
+          }.font(Theme.body(12)).padding(12)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+            .allowsHitTesting(false)
         }
-        .background { GlobeVisibility { visible = $0 }.allowsHitTesting(false) }
-        .focusable()
-        .onKeyPress(.leftArrow) {
-          turn(horizontal: 5)
-          return .handled
-        }
-        .onKeyPress(.rightArrow) {
-          turn(horizontal: -5)
-          return .handled
-        }
-        .onKeyPress(.upArrow) {
-          turn(vertical: 5)
-          return .handled
-        }
-        .onKeyPress(.downArrow) {
-          turn(vertical: -5)
-          return .handled
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Globe des téléchargements")
-        .accessibilityHint(
-          "Fais glisser ou utilise les flèches pour tourner. Les chiffres sont disponibles dans le classement des pays."
-        )
-      }.frame(height: 330)
-    }
-    .onChange(of: shouldSpin, initial: true) { _, value in motion.setSpinning(value, at: now) }
-    .task(id: countries) {
-      do {
-        let prepared = try await GlobeMeshCache.shared.snapshot(for: countries)
-        try Task.checkCancellation()
-        snapshot = prepared
-        failed = false
-        hovered = nil
-      } catch is CancellationError {
-      } catch { failed = true }
-    }
+      }
+      .background { GlobeVisibility { visible = $0 }.allowsHitTesting(false) }
+      .focusable()
+      .focused($focused)
+      .focusEffectDisabled()
+      .onKeyPress(.leftArrow) {
+        turn(horizontal: 5)
+        return .handled
+      }
+      .onKeyPress(.rightArrow) {
+        turn(horizontal: -5)
+        return .handled
+      }
+      .onKeyPress(.upArrow) {
+        turn(vertical: 5)
+        return .handled
+      }
+      .onKeyPress(.downArrow) {
+        turn(vertical: -5)
+        return .handled
+      }
+      .accessibilityElement(children: .ignore)
+      .accessibilityLabel("Globe des téléchargements")
+      .accessibilityHint(
+        "Fais glisser ou utilise les flèches pour tourner. Les chiffres sont disponibles dans le classement des pays."
+      )
+    }.frame(height: 330)
+      .onChange(of: focused) { _, value in
+        if !value { paused = false }
+      }
+      .onChange(of: shouldSpin, initial: true) { _, value in motion.setSpinning(value, at: now) }
+      .task(id: countries) {
+        do {
+          let prepared = try await GlobeMeshCache.shared.snapshot(for: countries)
+          try Task.checkCancellation()
+          snapshot = prepared
+          failed = false
+          hovered = nil
+        } catch is CancellationError {
+        } catch { failed = true }
+      }
   }
   private func turn(horizontal: Double = 0, vertical: Double = 0) {
     let yaw = motion.angle(at: now)
