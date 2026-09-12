@@ -63,10 +63,9 @@ struct TikTokView: View {
           HStack {
             Text("Vues des publications").font(Theme.heading(17))
             Spacer()
-            Picker("Graphique", selection: $mode) {
-              Text("Vues / jour").tag(0)
-              Text("Engagement").tag(1)
-            }.pickerStyle(.segmented).labelsHidden().frame(width: 240)
+            GlassSelector(
+              title: "Graphique", selection: $mode,
+              options: [(0, "Vues / jour"), (1, "Engagement")])
           }
           if pending {
             LoadingShimmer(height: 300)
@@ -127,16 +126,33 @@ struct TikTokView: View {
           Spacer()
           TextField("Rechercher une vidéo", text: $search).textFieldStyle(.roundedBorder).frame(
             width: 220)
-          Picker("Compte", selection: $account) {
-            Text("Tous les comptes").tag("all")
-            ForEach(store.tiktok?.accounts ?? []) { Text($0.name).tag($0.id) }
-          }.frame(width: 190)
-          Picker("Trier", selection: $sort) {
-            Text("Vues").tag("views")
-            Text("Date").tag("date")
-            Text("Engagement").tag("engagement")
-            Text("Partages").tag("shares")
-          }.frame(width: 150)
+          Menu {
+            Picker("Compte", selection: $account) {
+              Text("Tous les comptes").tag("all")
+              ForEach(store.tiktok?.accounts ?? []) { Text($0.name).tag($0.id) }
+            }
+          } label: {
+            Text(
+              store.tiktok?.accounts.first(where: { $0.id == account })?.name ?? "Tous les comptes"
+            )
+            .lineLimit(1)
+          }.menuStyle(.button).buttonStyle(.glass).buttonBorderShape(.capsule).frame(width: 170)
+            .accessibilityLabel("Compte")
+          Menu {
+            Picker("Trier", selection: $sort) {
+              Text("Vues").tag("views")
+              Text("Date").tag("date")
+              Text("Engagement").tag("engagement")
+              Text("Partages").tag("shares")
+            }
+          } label: {
+            Label(
+              ["views": "Vues", "date": "Date", "engagement": "Engagement", "shares": "Partages"][
+                sort] ?? "Vues",
+              systemImage: "arrow.up.arrow.down"
+            ).lineLimit(1)
+          }.menuStyle(.button).buttonStyle(.glass).buttonBorderShape(.capsule).frame(width: 140)
+            .accessibilityLabel("Trier")
         }
         if pending {
           LoadingShimmer(height: 220)
@@ -175,7 +191,7 @@ struct TikTokView: View {
               Button("Précédent") { page -= 1 }.disabled(page == 0)
               Text("\(min(page,count-1)+1) / \(count)")
               Button("Suivant") { page += 1 }.disabled(page >= count - 1)
-            }.font(Theme.body(12))
+            }.font(Theme.body(12)).buttonStyle(.glass).buttonBorderShape(.capsule)
           }
         }
       }

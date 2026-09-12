@@ -34,11 +34,9 @@ struct RevenueView: View {
           HStack {
             Text(mode == 2 ? "Évolution du MRR" : "Revenus quotidiens").font(Theme.heading(17))
             Spacer()
-            Picker("Revenus", selection: $mode) {
-              Text("Par jour").tag(0)
-              Text("Cumul").tag(1)
-              Text("MRR").tag(2)
-            }.pickerStyle(.segmented).labelsHidden().frame(width: 250)
+            GlassSelector(
+              title: "Revenus", selection: $mode,
+              options: [(0, "Par jour"), (1, "Cumul"), (2, "MRR")])
           }
           NativeTimeChart(
             series: [

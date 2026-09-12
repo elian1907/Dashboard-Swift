@@ -84,9 +84,11 @@ struct SettingsView: View {
       }
       HStack {
         Spacer()
-        Button("Enregistrer") { save() }.buttonStyle(.borderedProminent)
+        Button("Enregistrer") { save() }.buttonStyle(.glassProminent)
       }
-    }.formStyle(.grouped).frame(width: 660, height: 740).onAppear { draft = store.config }
+    }.buttonStyle(.glass).buttonBorderShape(.capsule).formStyle(.grouped).frame(
+      width: 660, height: 740
+    ).onAppear { draft = store.config }
       .preferredColorScheme(.dark)
   }
   func sourceName(_ key: String) -> String {

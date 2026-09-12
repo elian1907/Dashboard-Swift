@@ -23,7 +23,7 @@ import SwiftUI
   }
   var body: some Scene {
     Window("Loslo Dashboard", id: "dashboard") {
-      RootView().environment(store).preferredColorScheme(.dark).tint(Theme.other).environment(
+      RootView().environment(store).preferredColorScheme(.dark).environment(
         \.locale, Locale(identifier: "fr_FR")
       ).environment(\.timeZone, TimeZone(secondsFromGMT: 0)!).frame(minWidth: 1100, minHeight: 760)
     }.defaultSize(width: 1440, height: 980)
@@ -96,14 +96,16 @@ struct RootView: View {
                   width: 19)
                 Text(target.title).font(Theme.body(13))
                 Spacer(minLength: 0)
-              }.foregroundStyle(page == target ? Theme.text : Theme.muted).padding(.horizontal, 14)
-                .frame(height: 43).background {
-                  if page == target {
-                    RoundedRectangle(cornerRadius: 13).fill(.white.opacity(0.04)).glassEffect(
-                      .regular.interactive(), in: .rect(cornerRadius: 13))
-                  }
-                }
-            }.buttonStyle(.plain).accessibilityAddTraits(page == target ? .isSelected : [])
+              }.padding(.horizontal, 14).frame(
+                maxWidth: .infinity, minHeight: 43, alignment: .leading
+              )
+              .glassEffect(
+                (page == target ? Glass.clear : .regular).interactive(), in: .rect(cornerRadius: 14)
+              )
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(page == target ? Theme.text : Theme.muted)
+            .accessibilityAddTraits(page == target ? .isSelected : [])
           }
         }
         Spacer()
@@ -111,7 +113,7 @@ struct RootView: View {
           Label("Réglages", systemImage: "gearshape").font(Theme.body(12)).foregroundStyle(
             Theme.muted
           ).padding(12)
-        }.buttonStyle(.plain)
+        }.buttonStyle(.glass).buttonBorderShape(.capsule)
       }.padding(12).frame(width: 205).background(Color(hex: 0x1c1d1f)).clipShape(
         RoundedRectangle(cornerRadius: 24)
       ).padding(.leading, 12).padding(.vertical, 12)
@@ -119,14 +121,14 @@ struct RootView: View {
         HStack {
           Text(page.title).font(Theme.heading(29))
           Spacer()
-          Picker("Période d’analyse", selection: $store.period) {
-            ForEach(Period.allCases) { Text($0.label).tag($0) }
-          }.pickerStyle(.segmented).labelsHidden().frame(width: 390)
+          GlassSelector(
+            title: "Période d’analyse", selection: $store.period,
+            options: Period.allCases.map { (value: $0, label: $0.label) })
         }.padding(.horizontal, 26).padding(.top, 22).padding(.bottom, 24)
         ScrollView { content.padding(.horizontal, 26).padding(.bottom, 26).frame(maxWidth: 1700) }
           .scrollIndicators(.hidden).id(page)
       }
-    }.background(Theme.background).foregroundStyle(Theme.text)
+    }.background { DashboardBackdrop() }.foregroundStyle(Theme.text)
       .task {
         guard !LosloDashboardApp.isTesting else { return }
         await store.refresh()

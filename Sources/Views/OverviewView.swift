@@ -17,7 +17,7 @@ struct OverviewView: View {
             icon: "chart.line.uptrend.xyaxis", color: Theme.revenue,
             loading: store.busy("overview") && store.overview == nil,
             points: store.series(store.mrr?.points() ?? []),
-            chartLoading: store.busy("mrr") && store.mrr == nil)
+            chartLoading: store.busy("mrr") && store.mrr == nil, interactive: true)
         }
         Button {
           page = .revenue
@@ -27,7 +27,7 @@ struct OverviewView: View {
             icon: "eurosign.circle", color: Theme.revenue,
             loading: store.busy("revenue") && store.revenue == nil,
             change: store.delta(store.revenue?.points() ?? []), points: revenue,
-            chartLoading: store.busy("revenue") && store.revenue == nil)
+            chartLoading: store.busy("revenue") && store.revenue == nil, interactive: true)
         }
         Button {
           page = .downloads
@@ -38,7 +38,7 @@ struct OverviewView: View {
             icon: "arrow.down.circle", color: Theme.downloads,
             loading: store.busy("apple") && store.apple == nil,
             change: store.delta(store.downloads), points: downloads,
-            chartLoading: store.busy("apple") && store.apple == nil)
+            chartLoading: store.busy("apple") && store.apple == nil, interactive: true)
         }
         Button {
           page = .users
@@ -47,7 +47,7 @@ struct OverviewView: View {
             title: "Inscriptions", value: Analytics.number(Analytics.total(store.userPoints)),
             icon: "person.2", color: Theme.users,
             loading: store.busy("users") && store.users == nil, points: store.userPoints,
-            chartLoading: store.busy("users") && store.users == nil)
+            chartLoading: store.busy("users") && store.users == nil, interactive: true)
         }
       }.buttonStyle(.plain)
       GlassPanel(title: "Évolution de l’activité") {
@@ -107,10 +107,12 @@ struct OverviewView: View {
         if selected.contains(id) {
           Image(systemName: "checkmark").font(.system(size: 9, weight: .bold))
         }
-      }.font(Theme.body(12)).padding(.horizontal, 12).padding(.vertical, 9).background(
-        selected.contains(id) ? color.opacity(0.16) : .clear, in: Capsule()
-      ).glassEffect(.regular.interactive(), in: .capsule)
-    }.buttonStyle(.plain).accessibilityAddTraits(selected.contains(id) ? .isSelected : [])
+      }.font(Theme.body(12)).padding(.horizontal, 13).padding(.vertical, 9)
+        .glassEffect(
+          (selected.contains(id) ? Glass.clear.tint(color.opacity(0.2)) : .regular).interactive(),
+          in: .capsule)
+    }.buttonStyle(.plain)
+      .accessibilityAddTraits(selected.contains(id) ? .isSelected : [])
   }
 }
 struct AcquisitionView: View {
@@ -148,10 +150,9 @@ struct AcquisitionView: View {
           Text(name + (cumulative ? (users ? " cumulées" : " cumulés") : " par jour")).font(
             Theme.heading(18))
           Spacer()
-          Picker("Affichage", selection: $cumulative) {
-            Text("Par jour").tag(false)
-            Text("Cumul de la période").tag(true)
-          }.pickerStyle(.segmented).labelsHidden().frame(width: 310)
+          GlassSelector(
+            title: "Affichage", selection: $cumulative,
+            options: [(false, "Par jour"), (true, "Cumul de la période")])
         }
         NativeTimeChart(
           series: [

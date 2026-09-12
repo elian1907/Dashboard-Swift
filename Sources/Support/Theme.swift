@@ -32,14 +32,64 @@ extension Color {
 struct GlassPanel<Content: View>: View {
   var title: String? = nil
   var padding: CGFloat = 20
+  var interactive = false
+  @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
   @ViewBuilder var content: Content
   var body: some View {
     VStack(alignment: .leading, spacing: 18) {
       if let title { Text(title).font(Theme.heading(17)) }
       content
-    }.padding(padding).frame(maxWidth: .infinity, alignment: .leading).background(
-      Color.white.opacity(0.015)
-    ).glassEffect(.regular, in: .rect(cornerRadius: 22))
+    }.padding(padding).frame(maxWidth: .infinity, alignment: .leading)
+      .glassEffect(
+        (reduceTransparency ? Glass.regular : .clear)
+          .interactive(interactive),
+        in: .rect(cornerRadius: 24))
+  }
+}
+
+/// Each control uses the system material and button interaction, without a second painted surface.
+struct GlassSelector<Value: Hashable>: View {
+  let title: String
+  @Binding var selection: Value
+  let options: [(value: Value, label: String)]
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+  var body: some View {
+    GlassEffectContainer(spacing: 4) {
+      HStack(spacing: 6) {
+        ForEach(options, id: \.value) { option in
+          Button {
+            withAnimation(reduceMotion ? nil : .spring(response: 0.3, dampingFraction: 1)) {
+              selection = option.value
+            }
+          } label: {
+            Text(option.label).font(Theme.body(12)).lineLimit(1)
+              .minimumScaleFactor(0.8).padding(.horizontal, 14).padding(.vertical, 9)
+              .glassEffect(
+                (selection == option.value ? Glass.clear : .regular).interactive(), in: .capsule)
+          }
+          .buttonStyle(.plain)
+          .foregroundStyle(selection == option.value ? Theme.text : Theme.muted)
+          .accessibilityAddTraits(selection == option.value ? .isSelected : [])
+        }
+      }
+    }.accessibilityElement(children: .contain).accessibilityLabel(title)
+  }
+}
+
+struct DashboardBackdrop: View {
+  var body: some View {
+    GeometryReader { geometry in
+      LinearGradient(
+        colors: [Color(hex: 0x303133), Theme.background, Color(hex: 0x1b1c1e)],
+        startPoint: .topLeading, endPoint: .bottomTrailing
+      )
+      .overlay {
+        RadialGradient(
+          colors: [Color(hex: 0x78736a).opacity(0.16), .clear],
+          center: .topTrailing, startRadius: 0, endRadius: geometry.size.width * 0.7)
+      }
+    }.ignoresSafeArea().allowsHitTesting(false).accessibilityHidden(true)
   }
 }
 struct LoadingShimmer: View {
@@ -67,8 +117,9 @@ struct MetricTile: View {
   var change: String? = nil
   var points: [DataPoint] = []
   var chartLoading = false
+  var interactive = false
   var body: some View {
-    GlassPanel(padding: 18) {
+    GlassPanel(padding: 18, interactive: interactive) {
       HStack(spacing: 9) {
         Image(systemName: icon).font(.system(size: 16, weight: .semibold)).foregroundStyle(color)
           .frame(width: 32, height: 32).background(
