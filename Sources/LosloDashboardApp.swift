@@ -138,10 +138,7 @@ private struct DashboardSidebar: View {
               }.padding(.horizontal, 14).frame(
                 maxWidth: .infinity, minHeight: 43, alignment: .leading
               )
-              .glassEffect(
-                Glass.clear.tint(page == target ? .white.opacity(0.16) : nil).interactive(),
-                in: .rect(cornerRadius: 14)
-              )
+              .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 14))
             }
             .buttonStyle(DashboardButtonStyle())
             .foregroundStyle(page == target ? Theme.text : Theme.muted)
