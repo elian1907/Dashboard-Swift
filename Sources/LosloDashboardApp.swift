@@ -64,6 +64,7 @@ enum DashboardPage: String, CaseIterable, Identifiable {
 struct RootView: View {
   @Environment(DashboardStore.self) private var store
   @Environment(\.scenePhase) private var scenePhase
+  @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
   @State private var page: DashboardPage = .overview
   @State private var periodTask: Task<Void, Never>?
   var body: some View {
@@ -113,9 +114,10 @@ struct RootView: View {
             Theme.muted
           ).padding(12)
         }.buttonStyle(.glass).buttonBorderShape(.capsule)
-      }.padding(12).frame(width: 205).background(Color(hex: 0x1c1d1f)).clipShape(
-        RoundedRectangle(cornerRadius: 24)
-      ).padding(.leading, 12).padding(.vertical, 12)
+      }.padding(12).frame(width: 205)
+        .glassEffect(
+          reduceTransparency ? .regular : .clear, in: .rect(cornerRadius: 24)
+        ).padding(.leading, 12).padding(.vertical, 12)
       VStack(spacing: 0) {
         HStack {
           Text(page.title).font(Theme.heading(29))
