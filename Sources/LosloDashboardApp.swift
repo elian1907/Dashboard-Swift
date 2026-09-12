@@ -62,6 +62,17 @@ enum DashboardPage: String, CaseIterable, Identifiable {
     case .tiktok: "music.note"
     }
   }
+  var accent: Color {
+    switch self {
+    case .overview: Theme.indigo
+    case .revenue: Theme.revenue
+    case .downloads: Theme.downloads
+    case .users: Theme.users
+    case .geography: Theme.subscriptions
+    case .tiktok: Theme.tiktok
+    }
+  }
+
 }
 struct RootView: View {
   @Environment(DashboardStore.self) private var store
@@ -130,7 +141,8 @@ private struct DashboardSidebar: View {
             } label: {
               HStack(spacing: 11) {
                 Image(systemName: target.symbol).font(.system(size: 15, weight: .semibold)).frame(
-                  width: 19)
+                  width: 19
+                ).foregroundStyle(target.accent)
                 Text(target.title).font(Theme.body(13))
                 Spacer(minLength: 0)
               }.padding(.horizontal, 14).frame(

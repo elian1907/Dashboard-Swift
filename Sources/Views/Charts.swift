@@ -84,7 +84,7 @@ struct NativeTimeChart: View {
           ForEach(s.values) { p in
             if bars {
               BarMark(x: .value("Date", p.day, unit: .day), y: .value(s.name, p.value))
-                .foregroundStyle(s.color).cornerRadius(3)
+                .foregroundStyle(s.color.gradient).cornerRadius(3)
             } else {
               LineMark(
                 x: .value("Date", p.day), y: .value(s.name, p.value),
@@ -247,7 +247,7 @@ struct NativeDonut: View {
       Chart(valid) { item in
         SectorMark(
           angle: .value(item.label, item.value), innerRadius: .ratio(0.7), angularInset: 2
-        ).foregroundStyle(item.color).cornerRadius(4).opacity(
+        ).foregroundStyle(item.color.gradient).cornerRadius(4).opacity(
           active == nil || active?.id == item.id ? 1 : 0.35)
       }
       .chartAngleSelection(value: $selected).chartLegend(.hidden).frame(height: height)
@@ -282,7 +282,13 @@ struct NativeDonut: View {
 }
 struct VideoScatterChart: View {
   var videos: [TikTokVideo]
+  var accounts: [TikTokAccount] = []
+  var accountColors: [String: Color] = [:]
   var height: CGFloat = 300
+  private var shownAccounts: [TikTokAccount] {
+    let ids = Set(valid.map(\.accountId))
+    return accounts.filter { ids.contains($0.id) }
+  }
   var valid: [TikTokVideo] { videos.filter { $0.views > 0 } }
   var body: some View {
     ProgressiveContent(identity: "scatter", animatesReveal: true) {
@@ -292,12 +298,27 @@ struct VideoScatterChart: View {
     }
   }
   private var chart: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      plot.frame(height: height - (shownAccounts.count > 1 ? 28 : 0))
+      if shownAccounts.count > 1 {
+        HStack(spacing: 18) {
+          ForEach(shownAccounts) { account in
+            HStack(spacing: 6) {
+              Circle().fill(accountColors[account.id] ?? Theme.tiktok).frame(width: 7, height: 7)
+              Text(account.name).lineLimit(1)
+            }
+          }
+        }.font(Theme.body(11)).foregroundStyle(Theme.muted)
+      }
+    }.frame(height: height)
+  }
+  private var plot: some View {
     Chart(valid) { v in
       PointMark(x: .value("Vues", v.views), y: .value("Engagement", v.engagement)).foregroundStyle(
-        Theme.tiktok.opacity(0.8)
+        (accountColors[v.accountId] ?? Theme.tiktok).opacity(0.9)
       ).symbolSize(50)
     }
-    .chartXAxisLabel("Vues cumulées").chartYAxisLabel("Engagement (%)").frame(height: height)
+    .chartXAxisLabel("Vues cumulées").chartYAxisLabel("Engagement (%)")
     .chartOverlay { proxy in
       GeometryReader { geo in
         let rect = proxy.plotFrame.map { geo[$0] } ?? .zero

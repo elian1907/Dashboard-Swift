@@ -14,7 +14,7 @@ struct OverviewView: View {
         } label: {
           MetricTile(
             title: "MRR actuel", value: Analytics.money(store.overview?.value("mrr")),
-            icon: "chart.line.uptrend.xyaxis", color: Theme.revenue,
+            icon: "chart.line.uptrend.xyaxis", color: Theme.mrr,
             loading: store.overview == nil && store.busy("overview"),
             points: store.series(store.mrr?.points() ?? []),
             chartLoading: store.mrr == nil && store.busy("mrr"), interactive: true)
@@ -138,14 +138,15 @@ struct AcquisitionView: View {
         MetricTile(
           title: "Moyenne / jour",
           value: Analytics.number(total.map { $0 / Double(max(1, valid.count)) }, digits: 1),
-          icon: "chart.bar", color: color, loading: pending)
+          icon: "chart.bar", color: Theme.average, loading: pending)
         MetricTile(
           title: "Meilleur jour disponible",
-          value: Analytics.number(valid.compactMap(\.value).max()), icon: "trophy", color: color,
+          value: Analytics.number(valid.compactMap(\.value).max()), icon: "trophy",
+          color: Theme.peak,
           loading: pending)
         MetricTile(
           title: "Dernier jour disponible", value: Analytics.number(valid.last?.value),
-          icon: "calendar", color: color, loading: pending)
+          icon: "calendar", color: Theme.recent, loading: pending)
       }
       GlassPanel {
         HStack {

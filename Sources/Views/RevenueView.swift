@@ -17,7 +17,7 @@ struct RevenueView: View {
           chartLoading: store.revenue == nil && store.busy("revenue"))
         MetricTile(
           title: "MRR actuel", value: Analytics.money(store.overview?.value("mrr")),
-          icon: "chart.line.uptrend.xyaxis", color: Theme.revenue,
+          icon: "chart.line.uptrend.xyaxis", color: Theme.mrr,
           loading: store.overview == nil && store.busy("overview"),
           points: store.series(store.mrr?.points() ?? []),
           chartLoading: store.mrr == nil && store.busy("mrr"))
@@ -43,7 +43,8 @@ struct RevenueView: View {
           NativeTimeChart(
             series: [
               PlotSeries(
-                id: "revenue", name: mode == 2 ? "MRR" : "Revenus", color: Theme.revenue,
+                id: "revenue", name: mode == 2 ? "MRR" : "Revenus",
+                color: mode == 2 ? Theme.mrr : Theme.revenue,
                 points: mode == 2
                   ? store.series(store.mrr?.points() ?? [])
                   : mode == 1 ? Analytics.cumulative(sales) : sales,
@@ -55,11 +56,11 @@ struct RevenueView: View {
             SmallStat(
               title: "Revenus nets estimés de la période",
               value: Analytics.money(Analytics.total(net)),
-              loading: store.proceeds == nil && store.busy("proceeds"))
+              loading: store.proceeds == nil && store.busy("proceeds"), color: Theme.subscriptions)
             SmallStat(
               title: "Revenus depuis le lancement",
               value: Analytics.money(store.revenue?.totals["Revenue"].number),
-              loading: store.revenue == nil && store.busy("revenue"))
+              loading: store.revenue == nil && store.busy("revenue"), color: Theme.revenue)
           }.padding(.top, 8)
         }.frame(maxWidth: .infinity)
         GlassPanel(title: "Répartition des essais", fillsHeight: true) {
@@ -72,13 +73,13 @@ struct RevenueView: View {
               items: [
                 DonutItem(
                   id: "converted", label: "Convertis", value: trialTotal["Conversions"].number ?? 0,
-                  color: Theme.revenue),
+                  color: Theme.subscriptions),
                 DonutItem(
                   id: "pending", label: "En cours", value: trialTotal["Pending"].number ?? 0,
                   color: Theme.users),
                 DonutItem(
                   id: "expired", label: "Expirés", value: trialTotal["Expirations"].number ?? 0,
-                  color: Theme.other),
+                  color: Theme.coral),
               ], height: 180)
           } else {
             EmptyData(text: "Répartition indisponible", height: 235)
@@ -88,11 +89,12 @@ struct RevenueView: View {
               title: "Conversion des essais terminés",
               value: Offer.conversion(trialTotal).map {
                 Analytics.number($0 * 100, digits: 1) + " %"
-              } ?? "—", loading: store.trials == nil && store.busy("trials"))
+              } ?? "—", loading: store.trials == nil && store.busy("trials"),
+              color: Theme.subscriptions)
             SmallStat(
               title: "Payants sous 7 jours",
               value: Analytics.number(store.paying?.totals["Paying Customers (7 days)"].number),
-              loading: store.paying == nil && store.busy("paying"))
+              loading: store.paying == nil && store.busy("paying"), color: Theme.coral)
           }
         }.frame(width: 340)
       }.fixedSize(horizontal: false, vertical: true)
@@ -135,7 +137,7 @@ struct RevenueView: View {
           }.padding(.horizontal, 12).padding(.bottom, 4)
           ForEach(months, id: \.self) { month in
             let dates = store.range.labels.filter { $0.hasPrefix(month) }
-            let color = monthColor(month)
+            let color = Theme.monthColor(month)
             tableRow(color: color) {
               rowLabel(
                 Day.parse(month + "-01").formatted(
@@ -185,15 +187,10 @@ struct RevenueView: View {
   }
   private func offerColor(_ id: String) -> Color {
     switch id {
-    case "loslo_special_offer": Theme.revenue
-    case "loslo_premium_yearly": Theme.downloads
-    default: Theme.users
+    case "loslo_special_offer": Theme.coral
+    case "loslo_premium_yearly": Theme.revenue
+    default: Theme.subscriptions
     }
-  }
-  private func monthColor(_ month: String) -> Color {
-    let colors = [Theme.revenue, Theme.downloads, Theme.subscriptions]
-    let number = Int(month.suffix(2)) ?? 1
-    return colors[max(0, number - 1) % colors.count]
   }
   func monthChange(_ month: String, dates: [String]) -> String? {
     let first = month + "-01"

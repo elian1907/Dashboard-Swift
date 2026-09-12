@@ -4,10 +4,44 @@ import SwiftUI
 enum Theme {
   static let background = Color(hex: 0x202123), text = Color(hex: 0xf2f2f3),
     muted = Color(hex: 0xb8bbc1)
-  static let downloads = Color(hex: 0x8aaff3), users = Color(hex: 0xe6b16b),
-    revenue = Color(hex: 0xb29be7), tiktok = Color(hex: 0xdf98b2),
-    subscriptions = Color(hex: 0x85c4d4), other = Color(hex: 0x969ba4)
-  static let palette: [Color] = [downloads, revenue, users, tiktok, subscriptions, other]
+  static let downloads = Color(hex: 0x7da9ff), users = Color(hex: 0xf2b36f),
+    revenue = Color(hex: 0xbe9bff), tiktok = Color(hex: 0xf094c5),
+    subscriptions = Color(hex: 0x6dcfe3), other = Color(hex: 0x99a9c2)
+  static let coral = Color(hex: 0xff9686), indigo = Color(hex: 0x9c9fff),
+    gold = Color(hex: 0xeed17c)
+  static let mrr = coral, average = indigo, peak = gold, recent = subscriptions
+  static let palette: [Color] = [
+    downloads, coral, revenue, subscriptions, users, tiktok, indigo, gold,
+  ]
+  static func categoryColor(_ key: String) -> Color {
+    // Stable across launches and filters; Swift's randomized hashValue is unsuitable here.
+    let hash = key.utf8.reduce(UInt64(5381)) { ($0 &* 33) &+ UInt64($1) }
+    return palette[Int(hash % UInt64(palette.count))]
+  }
+  static func categoryColors(for keys: [String]) -> [String: Color] {
+    // Use the full account list, not the filtered videos, to keep colors stable between periods.
+    Dictionary(
+      uniqueKeysWithValues: Set(keys).sorted().enumerated().map { index, key in
+        (key, palette[index % palette.count])
+      })
+  }
+  static func countryColor(_ code: String) -> Color {
+    switch code {
+    case "FR": downloads
+    case "BE": revenue
+    case "CA": coral
+    case "CH": subscriptions
+    case "DZ": gold
+    case "MA": tiktok
+    case "US": users
+    case "SN": indigo
+    default: categoryColor(code)
+    }
+  }
+  static func monthColor(_ month: String) -> Color {
+    let number = Int(month.suffix(2)) ?? 1
+    return palette[max(0, number - 1) % palette.count]
+  }
   static func heading(_ size: CGFloat = 28) -> Font {
     .custom("Bricolage Grotesque", size: size).weight(.heavy)
   }
@@ -132,6 +166,7 @@ struct GlassPanel<Content: View>: View {
   var padding: CGFloat = 20
   var interactive = false
   var fillsHeight = false
+  var accent: Color? = nil
   @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
   @ViewBuilder var content: Content
   var body: some View {
@@ -142,7 +177,8 @@ struct GlassPanel<Content: View>: View {
       maxWidth: .infinity, maxHeight: fillsHeight ? .infinity : nil, alignment: .topLeading
     )
     .glassEffect(
-      (reduceTransparency ? Glass.regular : .clear).interactive(interactive),
+      (reduceTransparency ? Glass.regular : .clear).tint(accent?.opacity(0.09))
+        .interactive(interactive),
       in: .rect(cornerRadius: 24)
     )
     .contentShape(RoundedRectangle(cornerRadius: 24))
@@ -317,11 +353,11 @@ struct MetricTile: View {
   var chartLoading = false
   var interactive = false
   var body: some View {
-    GlassPanel(padding: 18, interactive: interactive) {
+    GlassPanel(padding: 18, interactive: interactive, accent: color) {
       HStack(spacing: 9) {
         Image(systemName: icon).font(.system(size: 16, weight: .semibold)).foregroundStyle(color)
           .frame(width: 32, height: 32).background(
-            color.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+            color.opacity(0.18).gradient, in: RoundedRectangle(cornerRadius: 10))
         Text(title).font(Theme.body(12)).foregroundStyle(Theme.muted).lineLimit(2)
         Spacer(minLength: 0)
       }
@@ -354,6 +390,7 @@ struct SmallStat: View {
   let title: String
   let value: String
   var loading = false
+  var color: Color = Theme.text
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
       Text(title).font(Theme.body(11)).foregroundStyle(Theme.muted)
@@ -361,7 +398,7 @@ struct SmallStat: View {
         if loading {
           LoadingShimmer(height: 20).frame(width: 65)
         } else {
-          AnimatedValue(value).font(Theme.heading(22)).monospacedDigit()
+          AnimatedValue(value).font(Theme.heading(22)).monospacedDigit().foregroundStyle(color)
         }
       }.animation(DashboardMotion.fade, value: loading)
     }.frame(maxWidth: .infinity, alignment: .leading)

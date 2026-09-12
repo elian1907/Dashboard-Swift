@@ -35,6 +35,7 @@ struct TikTokView: View {
   }
   var body: some View {
     let videoRows = rows
+    let accountColors = Theme.categoryColors(for: (store.tiktok?.accounts ?? []).map(\.id))
     let pageCount = max(1, (videoRows.count + 24) / 25)
     let displayedRows = Array(videoRows.dropFirst(min(page, pageCount - 1) * 25).prefix(25))
     return LazyVStack(spacing: 18) {
@@ -45,15 +46,15 @@ struct TikTokView: View {
         MetricTile(
           title: "J’aime",
           value: Analytics.number(store.tiktok == nil ? nil : all.reduce(0) { $0 + $1.likes }),
-          icon: "heart", color: Theme.tiktok, loading: pending)
+          icon: "heart", color: Theme.coral, loading: pending)
         MetricTile(
           title: "Publications",
           value: Analytics.number(store.tiktok.map { Double($0.videos.count) }),
-          icon: "play.rectangle", color: Theme.tiktok, loading: pending)
+          icon: "play.rectangle", color: Theme.indigo, loading: pending)
         MetricTile(
           title: "Abonnés",
           value: Analytics.number(store.tiktok.map { $0.accounts.reduce(0) { $0 + $1.followers } }),
-          icon: "person.2", color: Theme.tiktok, loading: pending)
+          icon: "person.2", color: Theme.subscriptions, loading: pending)
         MetricTile(
           title: "RPM TikTok", value: Analytics.money(rpm, digits: 2), icon: "eurosign.circle",
           color: Theme.revenue,
@@ -73,7 +74,9 @@ struct TikTokView: View {
             if pending {
               LoadingShimmer(height: 300)
             } else if mode == 1 {
-              VideoScatterChart(videos: periodVideos)
+              VideoScatterChart(
+                videos: periodVideos, accounts: store.tiktok?.accounts ?? [],
+                accountColors: accountColors)
             } else {
               NativeTimeChart(
                 series: [
@@ -95,7 +98,11 @@ struct TikTokView: View {
               }.foregroundStyle(Theme.muted).font(Theme.body(10))
               ForEach(store.tiktok?.accounts ?? []) { account in
                 GridRow {
-                  Text(account.name).lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
+                  HStack(spacing: 7) {
+                    Circle().fill(accountColors[account.id] ?? Theme.tiktok).frame(
+                      width: 6, height: 6)
+                    Text(account.name).lineLimit(1)
+                  }.frame(maxWidth: .infinity, alignment: .leading)
                   AnimatedValue(Analytics.number(account.followers)).monospacedDigit()
                   AnimatedValue(Analytics.number(account.views)).monospacedDigit()
                 }.font(Theme.body(12))
@@ -117,7 +124,8 @@ struct TikTokView: View {
               SmallStat(
                 title: Day.parse(month + "-01").formatted(
                   .dateTime.month(.wide).locale(Locale(identifier: "fr_FR"))),
-                value: Analytics.number(Double(videos.count)) + " vidéos"
+                value: Analytics.number(Double(videos.count)) + " vidéos",
+                color: Theme.monthColor(month)
               ).help(Analytics.number(videos.reduce(0) { $0 + $1.views }) + " vues cumulées")
             }
           }

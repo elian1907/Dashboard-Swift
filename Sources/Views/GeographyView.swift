@@ -88,8 +88,8 @@ struct GeographyView: View {
       .onChange(of: store.period) { page = 0 }
   }
   func distribution(_ rows: [CountryRow]) -> [DonutItem] {
-    var list = Array(rows.prefix(5).enumerated()).map { i, c in
-      DonutItem(id: c.code, label: c.name, value: c.units, color: Theme.palette[i])
+    var list = rows.prefix(5).map { c in
+      DonutItem(id: c.code, label: c.name, value: c.units, color: Theme.countryColor(c.code))
     }
     let rest = rows.dropFirst(5).reduce(0) { $0 + $1.units }
     if rest > 0 {

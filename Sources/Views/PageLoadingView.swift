@@ -68,7 +68,7 @@ struct PageLoadingView: View {
     switch page {
     case .overview:
       [
-        ("MRR actuel", "chart.line.uptrend.xyaxis", Theme.revenue),
+        ("MRR actuel", "chart.line.uptrend.xyaxis", Theme.mrr),
         ("Revenus de la période", "eurosign.circle", Theme.revenue),
         ("Téléchargements", "arrow.down.circle", Theme.downloads),
         ("Inscriptions", "person.2", Theme.users),
@@ -76,7 +76,7 @@ struct PageLoadingView: View {
     case .revenue:
       [
         ("Revenus de la période", "eurosign.circle", Theme.revenue),
-        ("MRR actuel", "chart.line.uptrend.xyaxis", Theme.revenue),
+        ("MRR actuel", "chart.line.uptrend.xyaxis", Theme.mrr),
         ("Abonnements actifs", "creditcard", Theme.subscriptions),
       ]
     case .downloads, .users:
@@ -85,14 +85,15 @@ struct PageLoadingView: View {
           page == .users ? "Inscriptions sur la période" : "Téléchargements sur la période",
           page.symbol, page == .users ? Theme.users : Theme.downloads
         ),
-        ("Moyenne / jour", "chart.bar", Theme.other),
-        ("Meilleur jour disponible", "trophy", Theme.other),
-        ("Dernier jour disponible", "calendar", Theme.other),
+        ("Moyenne / jour", "chart.bar", Theme.average),
+        ("Meilleur jour disponible", "trophy", Theme.peak),
+        ("Dernier jour disponible", "calendar", Theme.recent),
       ]
     case .tiktok:
       [
-        ("Vues cumulées", "eye", Theme.tiktok), ("J’aime", "heart", Theme.tiktok),
-        ("Publications", "play.rectangle", Theme.tiktok), ("Abonnés", "person.2", Theme.tiktok),
+        ("Vues cumulées", "eye", Theme.tiktok), ("J’aime", "heart", Theme.coral),
+        ("Publications", "play.rectangle", Theme.indigo),
+        ("Abonnés", "person.2", Theme.subscriptions),
         ("RPM TikTok", "eurosign.circle", Theme.revenue),
       ]
     case .geography: []
