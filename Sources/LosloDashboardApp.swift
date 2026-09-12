@@ -76,9 +76,17 @@ struct RootView: View {
         HStack {
           Text(page.title).font(Theme.heading(29))
           Spacer()
-          GlassSelector(
-            title: "Période d’analyse", selection: $store.period,
-            options: Period.allCases.map { (value: $0, label: $0.label) })
+          Picker("Période d’analyse", selection: $store.period) {
+            ForEach(Period.allCases) { period in
+              Text(period.label).tag(period)
+            }
+          }
+          .pickerStyle(.segmented)
+          .tint(Color(hex: 0x55575d))
+          .font(Theme.body(12))
+          .controlSize(.large)
+          .labelsHidden()
+          .fixedSize()
         }.padding(.horizontal, 26).padding(.top, 22).padding(.bottom, 24)
         DashboardPageHost(page: $page, store: store)
           .frame(maxWidth: .infinity, maxHeight: .infinity)
