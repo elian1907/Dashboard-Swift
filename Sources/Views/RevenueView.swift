@@ -32,7 +32,9 @@ struct RevenueView: View {
       HStack(alignment: .top, spacing: 18) {
         GlassPanel {
           HStack {
-            Text(mode == 2 ? "Évolution du MRR" : "Revenus quotidiens").font(Theme.heading(17))
+            DataCrossfade(value: mode == 2) {
+              Text(mode == 2 ? "Évolution du MRR" : "Revenus quotidiens").font(Theme.heading(17))
+            }
             Spacer()
             GlassSelector(
               title: "Revenus", selection: $mode,
@@ -111,11 +113,11 @@ struct RevenueView: View {
               let s = store.trials?.totals[offer.id] ?? .null
               GridRow {
                 Text(offer.name).frame(maxWidth: .infinity, alignment: .leading)
-                Text(Analytics.money(offer.price, digits: 2))
-                Text(Analytics.number(s["Trial Starts"].number))
-                Text(Analytics.number(s["Conversions"].number))
-                Text(Analytics.number(s["Pending"].number.map { max(0, $0) }))
-                Text(
+                AnimatedValue(Analytics.money(offer.price, digits: 2))
+                AnimatedValue(Analytics.number(s["Trial Starts"].number))
+                AnimatedValue(Analytics.number(s["Conversions"].number))
+                AnimatedValue(Analytics.number(s["Pending"].number.map { max(0, $0) }))
+                AnimatedValue(
                   Offer.conversion(s).map { Analytics.number($0 * 100, digits: 1) + " %" } ?? "—")
               }
             }
@@ -145,10 +147,10 @@ struct RevenueView: View {
                 Analytics.money(
                   Analytics.total(Analytics.align(store.proceeds?.points() ?? [], dates: dates))),
                 pending: store.proceeds == nil && store.busy("proceeds"))
-              Text(monthChange(month, dates: dates) ?? "—")
+              AnimatedValue(monthChange(month, dates: dates) ?? "—")
             }
           }
-        }.font(Theme.body(12)).monospacedDigit()
+        }.font(Theme.body(12)).monospacedDigit().animateData(months)
       }
     }
   }
@@ -158,7 +160,7 @@ struct RevenueView: View {
       maxWidth: .infinity, alignment: .leading)
   }
   @ViewBuilder func tableValue(_ value: String, pending: Bool) -> some View {
-    if pending { LoadingShimmer(height: 15).frame(width: 65) } else { Text(value) }
+    if pending { LoadingShimmer(height: 15).frame(width: 65) } else { AnimatedValue(value) }
   }
   func monthChange(_ month: String, dates: [String]) -> String? {
     let first = month + "-01"

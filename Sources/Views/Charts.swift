@@ -1,14 +1,14 @@
 import Charts
 import SwiftUI
 
-struct PlotSeries: Identifiable {
+struct PlotSeries: Identifiable, Hashable {
   let id: String
   let name: String
   let color: Color
   let points: [DataPoint]
   let loading: Bool
   let unit: String
-  struct Datum: Identifiable {
+  struct Datum: Identifiable, Hashable {
     let date: String
     let day: Date
     let value: Double
@@ -57,25 +57,25 @@ struct NativeTimeChart: View {
   }
   var ready: Bool { series.contains { !$0.values.isEmpty } }
   var body: some View {
-    if series.contains(where: { $0.loading }) && !ready {
-      LoadingShimmer(height: height)
-    } else if !ready {
-      if !compact { EmptyData(height: height) } else { Color.clear.frame(height: height) }
-    } else if compact {
-      Sparkline(series: series, timeline: timeline).frame(height: height).accessibilityHidden(true)
-    } else {
-      ProgressiveContent(identity: presentationKey) {
+    ZStack {
+      if series.contains(where: { $0.loading }) && !ready {
         LoadingShimmer(height: height)
-      } content: {
-        chart
+      } else if !ready {
+        if !compact { EmptyData(height: height) } else { Color.clear.frame(height: height) }
+      } else if compact {
+        Sparkline(series: series, timeline: timeline).frame(height: height).accessibilityHidden(
+          true)
+      } else {
+        ProgressiveContent(identity: "time-chart", animatesReveal: true) {
+          LoadingShimmer(height: height)
+        } content: {
+          DataCrossfade(value: bars) {
+            chart
+          }
+        }
       }
-    }
-  }
-  private var presentationKey: String {
-    [
-      String(bars), String(dots), labels.first ?? "", labels.last ?? "",
-      series.map { $0.id + ":" + $0.name }.joined(separator: "|"),
-    ].joined(separator: ";")
+    }.animation(DashboardMotion.fade, value: ready)
+      .animation(DashboardMotion.fade, value: series.contains(where: { $0.loading }))
   }
   private var chart: some View {
     VStack(alignment: .leading, spacing: 12) {
@@ -133,6 +133,8 @@ struct NativeTimeChart: View {
       }
       .frame(height: height)
       .accessibilityLabel(series.map(\.name).joined(separator: ", "))
+      .animateData(series)
+      .animateData(dots)
     }
   }
 }
@@ -188,6 +190,8 @@ private struct TimeChartInspection: View {
       selected = nil
       return .handled
     }
+    .onChange(of: timeline.labels) { selected = nil }
+    .transaction { $0.animation = nil }
   }
   private func move(_ delta: Int) {
     let labels = timeline.labels
@@ -197,7 +201,7 @@ private struct TimeChartInspection: View {
   }
 }
 
-struct DonutItem: Identifiable {
+struct DonutItem: Identifiable, Equatable {
   var id: String
   var label: String
   var value: Double
@@ -220,15 +224,21 @@ struct NativeDonut: View {
     }
   }
   var body: some View {
-    if total <= 0 {
-      EmptyData(text: "Aucune répartition disponible", height: height)
-    } else {
-      ProgressiveContent(identity: "distribution") {
-        LoadingShimmer(height: height + CGFloat(items.count) * 30)
-      } content: {
-        distribution
+    ZStack {
+      if total <= 0 {
+        EmptyData(text: "Aucune répartition disponible", height: height)
+      } else {
+        ProgressiveContent(identity: "distribution", animatesReveal: true) {
+          LoadingShimmer(height: height + CGFloat(items.count) * 30)
+        } content: {
+          distribution
+        }
       }
-    }
+    }.animation(DashboardMotion.fade, value: total > 0)
+      .onChange(of: items) {
+        selected = nil
+        hovered = nil
+      }
   }
   private var distribution: some View {
     VStack(spacing: 16) {
@@ -239,9 +249,10 @@ struct NativeDonut: View {
           active == nil || active?.id == item.id ? 1 : 0.35)
       }
       .chartAngleSelection(value: $selected).chartLegend(.hidden).frame(height: height)
+      .animateData(items)
       .overlay {
         VStack(spacing: 4) {
-          Text(Analytics.number(active?.value ?? total)).font(Theme.heading(27))
+          AnimatedValue(Analytics.number(active?.value ?? total)).font(Theme.heading(27))
           Text(active?.label ?? "Total").font(Theme.body(11)).foregroundStyle(Theme.muted)
         }.allowsHitTesting(false)
       }
@@ -257,8 +268,8 @@ struct NativeDonut: View {
       Circle().fill(item.color).frame(width: 7, height: 7)
       Text(item.label)
       Spacer()
-      Text(value)
-      Text(percent).foregroundStyle(Theme.muted).frame(width: 55, alignment: .trailing)
+      AnimatedValue(value)
+      AnimatedValue(percent).foregroundStyle(Theme.muted).frame(width: 55, alignment: .trailing)
     }
     .font(Theme.body(12))
     .contentShape(Rectangle())
@@ -268,10 +279,11 @@ struct NativeDonut: View {
 }
 struct VideoScatterChart: View {
   var videos: [TikTokVideo]
+  var height: CGFloat = 300
   var valid: [TikTokVideo] { videos.filter { $0.views > 0 } }
   var body: some View {
-    ProgressiveContent(identity: "scatter") {
-      LoadingShimmer(height: 260)
+    ProgressiveContent(identity: "scatter", animatesReveal: true) {
+      LoadingShimmer(height: height)
     } content: {
       chart
     }
@@ -282,7 +294,7 @@ struct VideoScatterChart: View {
         Theme.tiktok.opacity(0.8)
       ).symbolSize(50)
     }
-    .chartXAxisLabel("Vues cumulées").chartYAxisLabel("Engagement (%)").frame(height: 260)
+    .chartXAxisLabel("Vues cumulées").chartYAxisLabel("Engagement (%)").frame(height: height)
     .chartOverlay { proxy in
       GeometryReader { geo in
         let rect = proxy.plotFrame.map { geo[$0] } ?? .zero
@@ -295,6 +307,7 @@ struct VideoScatterChart: View {
         ScatterInspection(targets: targets, plotFrame: rect)
       }
     }
+    .animateData(videos)
   }
 }
 
@@ -345,6 +358,8 @@ private struct ScatterInspection: View {
             .allowsHitTesting(false)
         }
       }
+      .onChange(of: targets.map(\.video)) { hovered = nil }
+      .transaction { $0.animation = nil }
   }
 }
 
@@ -355,29 +370,31 @@ private struct Sparkline: View {
   @State private var selected: String?
   var body: some View {
     GeometryReader { geometry in
-      Canvas { context, size in
-        let values = series.flatMap(\.values)
-        guard let first = timeline.dates.first, let last = timeline.dates.last,
-          let minimum = values.map(\.value).min(), let maximum = values.map(\.value).max()
-        else { return }
-        let duration = max(1, last.timeIntervalSince(first))
-        let span = max(1, maximum - minimum)
-        for series in series {
-          var path = Path()
-          var segment: Int?
-          for datum in series.values {
-            let point = CGPoint(
-              x: datum.day.timeIntervalSince(first) / duration * size.width,
-              y: maximum == minimum
-                ? size.height / 2
-                : 3 + (1 - (datum.value - minimum) / span) * max(0, size.height - 6)
-            )
-            if segment != datum.segment { path.move(to: point) } else { path.addLine(to: point) }
-            segment = datum.segment
+      DataCrossfade(value: series) {
+        Canvas { context, size in
+          let values = series.flatMap(\.values)
+          guard let first = timeline.dates.first, let last = timeline.dates.last,
+            let minimum = values.map(\.value).min(), let maximum = values.map(\.value).max()
+          else { return }
+          let duration = max(1, last.timeIntervalSince(first))
+          let span = max(1, maximum - minimum)
+          for series in series {
+            var path = Path()
+            var segment: Int?
+            for datum in series.values {
+              let point = CGPoint(
+                x: datum.day.timeIntervalSince(first) / duration * size.width,
+                y: maximum == minimum
+                  ? size.height / 2
+                  : 3 + (1 - (datum.value - minimum) / span) * max(0, size.height - 6)
+              )
+              if segment != datum.segment { path.move(to: point) } else { path.addLine(to: point) }
+              segment = datum.segment
+            }
+            context.stroke(
+              path, with: .color(series.color),
+              style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
           }
-          context.stroke(
-            path, with: .color(series.color),
-            style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
         }
       }
       .contentShape(Rectangle())
@@ -397,6 +414,7 @@ private struct Sparkline: View {
           ChartTooltip(series: series, selected: selected).offset(y: -geometry.size.height - 6)
         }
       }
+      .onChange(of: series) { selected = nil }
     }
   }
 }

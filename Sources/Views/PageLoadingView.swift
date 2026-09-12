@@ -5,21 +5,24 @@ import SwiftUI
 /// There is no timer or dependency on a network request in this presentation boundary.
 struct ProgressiveContent<Identity: Hashable, Placeholder: View, Content: View>: View {
   let identity: Identity
+  var animatesReveal = false
   @ViewBuilder let placeholder: () -> Placeholder
   @ViewBuilder let content: () -> Content
   @State private var presented: Identity?
 
   var body: some View {
-    if presented == identity {
-      content()
-    } else {
-      placeholder().background(alignment: .topLeading) {
-        FirstPaint { presented = identity }
-          .frame(maxWidth: .infinity, maxHeight: .infinity).allowsHitTesting(false)
-          .accessibilityHidden(true)
-          .id(identity)
+    ZStack(alignment: .topLeading) {
+      if presented == identity {
+        content()
+      } else {
+        placeholder().background(alignment: .topLeading) {
+          FirstPaint { presented = identity }
+            .frame(maxWidth: .infinity, maxHeight: .infinity).allowsHitTesting(false)
+            .accessibilityHidden(true)
+            .id(identity)
+        }
       }
-    }
+    }.animation(animatesReveal ? DashboardMotion.fade : nil, value: presented)
   }
 }
 

@@ -69,16 +69,18 @@ struct TikTokView: View {
               title: "Graphique", selection: $mode,
               options: [(0, "Vues / jour"), (1, "Engagement")])
           }
-          if pending {
-            LoadingShimmer(height: 300)
-          } else if mode == 1 {
-            VideoScatterChart(videos: periodVideos)
-          } else {
-            NativeTimeChart(
-              series: [
-                PlotSeries(
-                  id: "tiktok", name: "Vues des publications", color: Theme.tiktok, points: curve)
-              ], height: 300, bars: true)
+          DataCrossfade(value: pending ? -1 : mode) {
+            if pending {
+              LoadingShimmer(height: 300)
+            } else if mode == 1 {
+              VideoScatterChart(videos: periodVideos)
+            } else {
+              NativeTimeChart(
+                series: [
+                  PlotSeries(
+                    id: "tiktok", name: "Vues des publications", color: Theme.tiktok, points: curve)
+                ], height: 300, bars: true)
+            }
           }
         }
         GlassPanel(title: "Comptes") {
@@ -94,8 +96,8 @@ struct TikTokView: View {
               ForEach(store.tiktok?.accounts ?? []) { account in
                 GridRow {
                   Text(account.name).lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
-                  Text(Analytics.number(account.followers)).monospacedDigit()
-                  Text(Analytics.number(account.views)).monospacedDigit()
+                  AnimatedValue(Analytics.number(account.followers)).monospacedDigit()
+                  AnimatedValue(Analytics.number(account.views)).monospacedDigit()
                 }.font(Theme.body(12))
               }
             }.frame(minHeight: 300, alignment: .top)
@@ -183,7 +185,7 @@ struct TikTokView: View {
                 videoCell(Analytics.number(video.engagement, digits: 1) + " %", width: 82)
               }.frame(height: 50)
             }
-          }.font(Theme.body(12)).monospacedDigit()
+          }.font(Theme.body(12)).monospacedDigit().animateData(displayedRows.map(\.id))
           if videoRows.isEmpty {
             EmptyData(text: "Aucune vidéo ne correspond à cette sélection", height: 100)
           }
@@ -191,7 +193,7 @@ struct TikTokView: View {
             HStack {
               Spacer()
               Button("Précédent") { page -= 1 }.disabled(page == 0)
-              Text("\(min(page,pageCount-1)+1) / \(pageCount)")
+              AnimatedValue("\(min(page,pageCount-1)+1) / \(pageCount)")
               Button("Suivant") { page += 1 }.disabled(page >= pageCount - 1)
             }.font(Theme.body(12)).buttonStyle(.glass).buttonBorderShape(.capsule)
           }
@@ -202,7 +204,8 @@ struct TikTokView: View {
     ) { page = 0 }
   }
   private func videoCell(_ text: String, width: CGFloat) -> some View {
-    Text(text).lineLimit(1).minimumScaleFactor(0.85).frame(width: width, alignment: .trailing)
+    AnimatedValue(text).lineLimit(1).minimumScaleFactor(0.85).frame(
+      width: width, alignment: .trailing)
   }
   var months: [String] { Array(Set(periodVideos.map { String($0.date.prefix(7)) })).sorted(by: >) }
   var curve: [DataPoint] {

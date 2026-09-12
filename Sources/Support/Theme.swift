@@ -29,6 +29,53 @@ extension Color {
       blue: Double(hex & 255) / 255, opacity: 1)
   }
 }
+
+enum DashboardMotion {
+  static func data(reduceMotion: Bool) -> Animation {
+    reduceMotion ? .easeOut(duration: 0.12) : .smooth(duration: 0.34, extraBounce: 0)
+  }
+  static let fade = Animation.easeInOut(duration: 0.2)
+}
+
+/// Animate only the value that changed, never the store or the entire page.
+/// SwiftUI retargets an in-flight transition when another selection arrives.
+struct AnimatedValue: View {
+  let value: String
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  init(_ value: String) { self.value = value }
+  var body: some View {
+    Text(value)
+      .contentTransition(reduceMotion ? .opacity : .numericText())
+      .animation(DashboardMotion.data(reduceMotion: reduceMotion), value: value)
+  }
+}
+
+private struct DataAnimation<Value: Equatable>: ViewModifier {
+  let value: Value
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  func body(content: Content) -> some View {
+    content.animation(reduceMotion ? nil : DashboardMotion.data(reduceMotion: false), value: value)
+  }
+}
+
+extension View {
+  func animateData<Value: Equatable>(_ value: Value) -> some View {
+    modifier(DataAnimation(value: value))
+  }
+}
+
+/// Canvas drawings cannot interpolate their paths. Crossfade their contents,
+/// while keeping the surrounding view and its pointer/drag state alive.
+struct DataCrossfade<Value: Hashable, Content: View>: View {
+  let value: Value
+  @ViewBuilder var content: Content
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  var body: some View {
+    ZStack { content.id(value).transition(.opacity) }
+      .animation(reduceMotion ? .easeOut(duration: 0.12) : DashboardMotion.fade, value: value)
+  }
+}
+
 /// Metric cards share a known width. Measure each at that width instead of
 /// asking a flexible HStack to repeatedly negotiate their minimum/ideal sizes.
 struct MetricRow: Layout {
@@ -183,21 +230,24 @@ struct MetricTile: View {
         if loading {
           LoadingShimmer(height: 25).frame(width: 95).padding(.vertical, 6)
         } else {
-          Text(value).font(Theme.heading(33)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.6)
+          AnimatedValue(value).font(Theme.heading(33)).monospacedDigit().lineLimit(1)
+            .minimumScaleFactor(0.6)
         }
         Spacer(minLength: 2)
         if !loading, let change {
-          Text(change).font(Theme.body(10)).padding(.horizontal, 7).padding(.vertical, 4)
+          AnimatedValue(change).font(Theme.body(10)).padding(.horizontal, 7).padding(.vertical, 4)
             .background(.white.opacity(0.06), in: Capsule())
         }
-      }
-      if chartLoading {
-        LoadingShimmer(height: 34)
-      } else if !points.isEmpty {
-        NativeTimeChart(
-          series: [PlotSeries(id: title, name: title, color: color, points: points)], height: 38,
-          compact: true)
-      }
+      }.animation(DashboardMotion.fade, value: loading)
+      Group {
+        if chartLoading {
+          LoadingShimmer(height: 34)
+        } else if !points.isEmpty {
+          NativeTimeChart(
+            series: [PlotSeries(id: title, name: title, color: color, points: points)], height: 38,
+            compact: true)
+        }
+      }.animation(DashboardMotion.fade, value: chartLoading)
     }
   }
 }
@@ -208,11 +258,13 @@ struct SmallStat: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
       Text(title).font(Theme.body(11)).foregroundStyle(Theme.muted)
-      if loading {
-        LoadingShimmer(height: 20).frame(width: 65)
-      } else {
-        Text(value).font(Theme.heading(22)).monospacedDigit()
-      }
+      Group {
+        if loading {
+          LoadingShimmer(height: 20).frame(width: 65)
+        } else {
+          AnimatedValue(value).font(Theme.heading(22)).monospacedDigit()
+        }
+      }.animation(DashboardMotion.fade, value: loading)
     }.frame(maxWidth: .infinity, alignment: .leading)
   }
 }

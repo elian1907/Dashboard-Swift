@@ -33,17 +33,19 @@ struct GeographyView: View {
             ForEach(rows) { c in
               HStack(spacing: 18) {
                 Text(c.flag + "  " + c.name).frame(maxWidth: .infinity, alignment: .leading)
-                Text(Analytics.number(c.units)).frame(width: 105, alignment: .trailing)
-                Text(
+                AnimatedValue(Analytics.number(c.units)).frame(width: 105, alignment: .trailing)
+                AnimatedValue(
                   report.missing == 0 && total > 0
                     ? Analytics.number(c.units / total * 100, digits: 1) + " %" : "—"
                 )
                 .frame(width: 62, alignment: .trailing)
-                Text(report.missing == 0 ? Analytics.change(c.units, previous[c.code]) ?? "—" : "—")
-                  .frame(width: 74, alignment: .trailing)
+                AnimatedValue(
+                  report.missing == 0 ? Analytics.change(c.units, previous[c.code]) ?? "—" : "—"
+                )
+                .frame(width: 74, alignment: .trailing)
               }
             }
-          }.font(Theme.body(12)).monospacedDigit()
+          }.font(Theme.body(12)).monospacedDigit().animateData(rows.map(\.id))
           if rows.isEmpty { EmptyData(text: "Aucun pays pour cette sélection", height: 400) }
         }
       }
@@ -101,49 +103,51 @@ struct NativeGlobe: View {
   }
   var body: some View {
     GeometryReader { geo in
-      Canvas { context, size in
-        let r = min(size.width, size.height) * 0.45
-        let rect = CGRect(
-          x: size.width / 2 - r, y: size.height / 2 - r, width: r * 2, height: r * 2)
-        let sphere = Path(ellipseIn: rect)
-        context.fill(
-          sphere,
-          with: .radialGradient(
-            Gradient(colors: [Color(hex: 0x444950), Color(hex: 0x25272b)]),
-            center: CGPoint(x: size.width * 0.4, y: size.height * 0.3), startRadius: 0,
-            endRadius: r * 1.8))
-        context.clip(to: sphere)
-        for polygon in Self.polygons {
-          var path = Path()
-          var drawing = false
-          for point in polygon {
-            let (p, z) = project(lon: point[0], lat: point[1], size: size)
-            if z > 0 {
-              if drawing {
-                path.addLine(to: p)
-              } else {
-                path.move(to: p)
-                drawing = true
-              }
-            } else if drawing {
-              path.closeSubpath()
-              drawing = false
-            }
-          }
-          if drawing { path.closeSubpath() }
-          context.fill(path, with: .color(Color(hex: 0x828a97).opacity(0.55)))
-        }
-        let maxValue = max(1, countries.map(\.units).max() ?? 1)
-        for country in countries {
-          guard let c = Countries.centroid[country.code] else { continue }
-          let (p, z) = project(lon: c.longitude, lat: c.latitude, size: size)
-          guard z > 0 else { continue }
-          let radius = 3 + sqrt(max(0, country.units) / maxValue) * 6
+      DataCrossfade(value: countries) {
+        Canvas { context, size in
+          let r = min(size.width, size.height) * 0.45
+          let rect = CGRect(
+            x: size.width / 2 - r, y: size.height / 2 - r, width: r * 2, height: r * 2)
+          let sphere = Path(ellipseIn: rect)
           context.fill(
-            Path(
-              ellipseIn: CGRect(
-                x: p.x - radius, y: p.y - radius, width: radius * 2, height: radius * 2)),
-            with: .color(Theme.downloads))
+            sphere,
+            with: .radialGradient(
+              Gradient(colors: [Color(hex: 0x444950), Color(hex: 0x25272b)]),
+              center: CGPoint(x: size.width * 0.4, y: size.height * 0.3), startRadius: 0,
+              endRadius: r * 1.8))
+          context.clip(to: sphere)
+          for polygon in Self.polygons {
+            var path = Path()
+            var drawing = false
+            for point in polygon {
+              let (p, z) = project(lon: point[0], lat: point[1], size: size)
+              if z > 0 {
+                if drawing {
+                  path.addLine(to: p)
+                } else {
+                  path.move(to: p)
+                  drawing = true
+                }
+              } else if drawing {
+                path.closeSubpath()
+                drawing = false
+              }
+            }
+            if drawing { path.closeSubpath() }
+            context.fill(path, with: .color(Color(hex: 0x828a97).opacity(0.55)))
+          }
+          let maxValue = max(1, countries.map(\.units).max() ?? 1)
+          for country in countries {
+            guard let c = Countries.centroid[country.code] else { continue }
+            let (p, z) = project(lon: c.longitude, lat: c.latitude, size: size)
+            guard z > 0 else { continue }
+            let radius = 3 + sqrt(max(0, country.units) / maxValue) * 6
+            context.fill(
+              Path(
+                ellipseIn: CGRect(
+                  x: p.x - radius, y: p.y - radius, width: radius * 2, height: radius * 2)),
+              with: .color(Theme.downloads))
+          }
         }
       }.contentShape(Rectangle()).gesture(
         DragGesture().onChanged { longitude = dragBase + $0.translation.width * 0.5 }.onEnded { _ in

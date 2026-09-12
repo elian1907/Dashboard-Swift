@@ -56,28 +56,30 @@ struct OverviewView: View {
           chip("users", "Inscriptions", Theme.users)
           chip("revenue", "Revenus", Theme.revenue)
         }
-        if selected.contains("downloads") || selected.contains("users") {
-          HStack {
-            Text("Activité quotidienne").font(Theme.heading(16))
-            Spacer()
-            Text("Nombre / jour").font(Theme.body(11)).foregroundStyle(Theme.muted)
+        VStack(spacing: 18) {
+          if selected.contains("downloads") || selected.contains("users") {
+            HStack {
+              Text("Activité quotidienne").font(Theme.heading(16))
+              Spacer()
+              Text("Nombre / jour").font(Theme.body(11)).foregroundStyle(Theme.muted)
+            }
+            NativeTimeChart(series: activity, height: selected.contains("revenue") ? 220 : 440)
           }
-          NativeTimeChart(series: activity, height: selected.contains("revenue") ? 220 : 440)
-        }
-        if selected.contains("revenue") {
-          HStack {
-            Text("Revenus quotidiens").font(Theme.heading(16))
-            Spacer()
-            Text("€ / jour").font(Theme.body(11)).foregroundStyle(Theme.muted)
+          if selected.contains("revenue") {
+            HStack {
+              Text("Revenus quotidiens").font(Theme.heading(16))
+              Spacer()
+              Text("€ / jour").font(Theme.body(11)).foregroundStyle(Theme.muted)
+            }
+            NativeTimeChart(
+              series: [
+                PlotSeries(
+                  id: "revenue", name: "Revenus", color: Theme.revenue, points: revenue,
+                  loading: store.revenue == nil && store.busy("revenue"), unit: "€")
+              ], height: selected.count == 1 ? 440 : 200, bars: true)
           }
-          NativeTimeChart(
-            series: [
-              PlotSeries(
-                id: "revenue", name: "Revenus", color: Theme.revenue, points: revenue,
-                loading: store.revenue == nil && store.busy("revenue"), unit: "€")
-            ], height: selected.count == 1 ? 440 : 200, bars: true)
-        }
-        if selected.isEmpty { EmptyData(text: "Sélectionne un indicateur", height: 420) }
+          if selected.isEmpty { EmptyData(text: "Sélectionne un indicateur", height: 420) }
+        }.animateData(selected)
       }
     }
   }
@@ -147,8 +149,10 @@ struct AcquisitionView: View {
       }
       GlassPanel {
         HStack {
-          Text(name + (cumulative ? (users ? " cumulées" : " cumulés") : " par jour")).font(
-            Theme.heading(18))
+          DataCrossfade(value: cumulative) {
+            Text(name + (cumulative ? (users ? " cumulées" : " cumulés") : " par jour")).font(
+              Theme.heading(18))
+          }
           Spacer()
           GlassSelector(
             title: "Affichage", selection: $cumulative,

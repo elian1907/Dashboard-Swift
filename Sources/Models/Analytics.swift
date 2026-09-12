@@ -62,7 +62,7 @@ struct PeriodRange: Equatable, Sendable {
     previous = Day.range(Day.shift(start, -labels.count), Day.shift(start, -1))
   }
 }
-struct DataPoint: Codable, Identifiable, Equatable, Sendable {
+struct DataPoint: Codable, Identifiable, Hashable, Sendable {
   var date: String
   var value: Double?
   var incomplete: Bool = false
@@ -232,7 +232,7 @@ struct SalesArchive: Codable, Sendable {
     )
   }
 }
-struct CountryRow: Identifiable {
+struct CountryRow: Identifiable, Hashable {
   let code: String
   let units: Double
   var id: String { code }
@@ -251,7 +251,7 @@ struct TikTokAccount: Codable, Identifiable, Sendable {
   var views: Double
   var videos: Int
 }
-struct TikTokVideo: Codable, Identifiable, Sendable {
+struct TikTokVideo: Codable, Identifiable, Equatable, Sendable {
   var id: String
   var accountId: String
   var account: String
