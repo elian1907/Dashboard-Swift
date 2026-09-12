@@ -1,0 +1,14 @@
+.DS_Store
+build/
+.build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+.env*
+*.p8
+*token*.json
+*secrets*.json
+data/
+*.app
+*.dmg
+*.zip

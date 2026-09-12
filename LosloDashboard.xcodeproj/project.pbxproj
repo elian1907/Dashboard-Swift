@@ -1,0 +1,577 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		019E80B5976DF4BFADF80445 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 3E3F1687FAD5B551865757DA /* libz.tbd */; };
+		0247693409AD3EEBC6CF350E /* world-atlas-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 954D6D7BCB0A06BF0C9EB2A1 /* world-atlas-LICENSE.txt */; };
+		09F9510460E9BF50FF7969B5 /* Charts.swift in Sources */ = {isa = PBXBuildFile; fileRef = F51F7C5F9CFB15B45A5FDDE1 /* Charts.swift */; };
+		0A63AEE28F4FBD79495EA31A /* GeographyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C577F1B3C93C06EF1398E14 /* GeographyView.swift */; };
+		15A50B9CAE0D3A6CAF6535B9 /* Countries.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE99D60A3A3FF8C511E93838 /* Countries.swift */; };
+		1D66D6841334ED0517BEB987 /* LosloDashboardApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33AC4C3573EC5BAA5BE5EA9D /* LosloDashboardApp.swift */; };
+		2A92F47CD058604BF5955533 /* JWT.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3961BCAD7FD3053E5C186940 /* JWT.swift */; };
+		3485341D13D32995E1B6DF27 /* AnalyticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1506C4C20A9B9D81A846D6 /* AnalyticsTests.swift */; };
+		3954CFABCA05337A665240AE /* hanken.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2FC9C466616062FA32A0AA82 /* hanken.ttf */; };
+		4302C2E5888292554EA62196 /* AppleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E82276D34BEA78C55500985 /* AppleService.swift */; };
+		491608B3A25871D6F07EB299 /* TikTokService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84E0700B10BD2398884EF4D4 /* TikTokService.swift */; };
+		5DBB82E0AF3BC6CE6BD78448 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78B23CCFB81DF06E526226BB /* Theme.swift */; };
+		6529B0953F54042C5641D556 /* API.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0761C899E63314AA14693081 /* API.swift */; };
+		81D8D01ECA4220C53C3B9D66 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4A9244CDA36048A029CF3B2 /* SettingsView.swift */; };
+		94B13A59DD2605D0F32ABE25 /* loslo-logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 17266AE27208CE2EC5AA3919 /* loslo-logo.png */; };
+		AA5AA85B890C5A2A630BBEA6 /* bricolage-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4B6D0241A587C2246143CAA2 /* bricolage-OFL.txt */; };
+		AB4FBF7F2A3A25CEA26DFF9F /* world-polygons.json in Resources */ = {isa = PBXBuildFile; fileRef = F8FADED95AF7E0BE0CC7C02E /* world-polygons.json */; };
+		AD9E7AB674F03D3AD0830899 /* hanken-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = AFE8A43F5BFC98FA483AC262 /* hanken-OFL.txt */; };
+		BF1922FACD4A610BE3E6CF6B /* DashboardStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14D103214ED351057833B6A /* DashboardStore.swift */; };
+		CD0BF6FF2865633DBE92FD36 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 565C9CC1D22C0AB2D381A528 /* AppIcon.icns */; };
+		DD05D7B46A8FE8F0BC88E6A0 /* OverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14E29654EF689FEEF0368D1B /* OverviewView.swift */; };
+		E194C71E021AC733EE64C851 /* TikTokView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F8EAB19A60423ACDE5EE125 /* TikTokView.swift */; };
+		E2BC7E8E11F84795AF9876E1 /* Analytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9156C14AC985CA35AAA8478 /* Analytics.swift */; };
+		F7A45E1E60DC46E8EAC70F83 /* RevenueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DAC96ABA998AE0A1BA40BB8 /* RevenueView.swift */; };
+		F7AD5FB6034107DC47843C7F /* LocalStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 145948BBB5C45234F6A5E5C6 /* LocalStorage.swift */; };
+		FFB8F986906B0CD6B92E40B0 /* bricolage.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 911CB797194C0C43F63FD81F /* bricolage.ttf */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		11C7D23EA65383B223AD2791 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C746B738145675663A19F098 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EEA9BDDF1BDE229A093D996D;
+			remoteInfo = LosloDashboard;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0761C899E63314AA14693081 /* API.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = API.swift; sourceTree = "<group>"; };
+		0F8EAB19A60423ACDE5EE125 /* TikTokView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TikTokView.swift; sourceTree = "<group>"; };
+		145948BBB5C45234F6A5E5C6 /* LocalStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalStorage.swift; sourceTree = "<group>"; };
+		14E29654EF689FEEF0368D1B /* OverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverviewView.swift; sourceTree = "<group>"; };
+		17266AE27208CE2EC5AA3919 /* loslo-logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "loslo-logo.png"; sourceTree = "<group>"; };
+		1C577F1B3C93C06EF1398E14 /* GeographyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeographyView.swift; sourceTree = "<group>"; };
+		1DAC96ABA998AE0A1BA40BB8 /* RevenueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevenueView.swift; sourceTree = "<group>"; };
+		2CA87AC8862DA4E5C79F9C9F /* LosloDashboardTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LosloDashboardTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2FC9C466616062FA32A0AA82 /* hanken.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = hanken.ttf; sourceTree = "<group>"; };
+		33AC4C3573EC5BAA5BE5EA9D /* LosloDashboardApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LosloDashboardApp.swift; sourceTree = "<group>"; };
+		3961BCAD7FD3053E5C186940 /* JWT.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JWT.swift; sourceTree = "<group>"; };
+		3E3F1687FAD5B551865757DA /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
+		4B6D0241A587C2246143CAA2 /* bricolage-OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "bricolage-OFL.txt"; sourceTree = "<group>"; };
+		565C9CC1D22C0AB2D381A528 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
+		58DA15C963E412A7BFDBCAF7 /* Loslo Dashboard.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Loslo Dashboard.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5A1506C4C20A9B9D81A846D6 /* AnalyticsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsTests.swift; sourceTree = "<group>"; };
+		5E82276D34BEA78C55500985 /* AppleService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleService.swift; sourceTree = "<group>"; };
+		78B23CCFB81DF06E526226BB /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		84E0700B10BD2398884EF4D4 /* TikTokService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TikTokService.swift; sourceTree = "<group>"; };
+		911CB797194C0C43F63FD81F /* bricolage.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = bricolage.ttf; sourceTree = "<group>"; };
+		954D6D7BCB0A06BF0C9EB2A1 /* world-atlas-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "world-atlas-LICENSE.txt"; sourceTree = "<group>"; };
+		A4A9244CDA36048A029CF3B2 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		A9156C14AC985CA35AAA8478 /* Analytics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Analytics.swift; sourceTree = "<group>"; };
+		AE99D60A3A3FF8C511E93838 /* Countries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Countries.swift; sourceTree = "<group>"; };
+		AFE8A43F5BFC98FA483AC262 /* hanken-OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "hanken-OFL.txt"; sourceTree = "<group>"; };
+		B14D103214ED351057833B6A /* DashboardStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardStore.swift; sourceTree = "<group>"; };
+		F51F7C5F9CFB15B45A5FDDE1 /* Charts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Charts.swift; sourceTree = "<group>"; };
+		F8FADED95AF7E0BE0CC7C02E /* world-polygons.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "world-polygons.json"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		9C39A662FBB276412C673463 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				019E80B5976DF4BFADF80445 /* libz.tbd in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0F22D55212BEEC10A89B15B9 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				0761C899E63314AA14693081 /* API.swift */,
+				5E82276D34BEA78C55500985 /* AppleService.swift */,
+				3961BCAD7FD3053E5C186940 /* JWT.swift */,
+				145948BBB5C45234F6A5E5C6 /* LocalStorage.swift */,
+				84E0700B10BD2398884EF4D4 /* TikTokService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		180454E1B917800F7D69D2F3 = {
+			isa = PBXGroup;
+			children = (
+				C1D9FE77F882FF3DA9B2FBCB /* Sources */,
+				A8739209409C06FEFF301523 /* Tests */,
+				8817803FC8AA64B91B2A5846 /* Frameworks */,
+				30AA69018C2785D88E1EECE9 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		30AA69018C2785D88E1EECE9 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				58DA15C963E412A7BFDBCAF7 /* Loslo Dashboard.app */,
+				2CA87AC8862DA4E5C79F9C9F /* LosloDashboardTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8817803FC8AA64B91B2A5846 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				3E3F1687FAD5B551865757DA /* libz.tbd */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		A36A460CA4C0C567DE8A0ABA /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				AE99D60A3A3FF8C511E93838 /* Countries.swift */,
+				B14D103214ED351057833B6A /* DashboardStore.swift */,
+				78B23CCFB81DF06E526226BB /* Theme.swift */,
+			);
+			path = Support;
+			sourceTree = "<group>";
+		};
+		A8739209409C06FEFF301523 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				5A1506C4C20A9B9D81A846D6 /* AnalyticsTests.swift */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		AAFE5640F16466109568181C /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A9156C14AC985CA35AAA8478 /* Analytics.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		C1D9FE77F882FF3DA9B2FBCB /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				33AC4C3573EC5BAA5BE5EA9D /* LosloDashboardApp.swift */,
+				AAFE5640F16466109568181C /* Models */,
+				D0B1FD8E5BE604AD1400D778 /* Resources */,
+				0F22D55212BEEC10A89B15B9 /* Services */,
+				A36A460CA4C0C567DE8A0ABA /* Support */,
+				F094F5FE2E3247582CEA7C36 /* Views */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		D0B1FD8E5BE604AD1400D778 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				565C9CC1D22C0AB2D381A528 /* AppIcon.icns */,
+				4B6D0241A587C2246143CAA2 /* bricolage-OFL.txt */,
+				911CB797194C0C43F63FD81F /* bricolage.ttf */,
+				AFE8A43F5BFC98FA483AC262 /* hanken-OFL.txt */,
+				2FC9C466616062FA32A0AA82 /* hanken.ttf */,
+				17266AE27208CE2EC5AA3919 /* loslo-logo.png */,
+				954D6D7BCB0A06BF0C9EB2A1 /* world-atlas-LICENSE.txt */,
+				F8FADED95AF7E0BE0CC7C02E /* world-polygons.json */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		F094F5FE2E3247582CEA7C36 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				F51F7C5F9CFB15B45A5FDDE1 /* Charts.swift */,
+				1C577F1B3C93C06EF1398E14 /* GeographyView.swift */,
+				14E29654EF689FEEF0368D1B /* OverviewView.swift */,
+				1DAC96ABA998AE0A1BA40BB8 /* RevenueView.swift */,
+				A4A9244CDA36048A029CF3B2 /* SettingsView.swift */,
+				0F8EAB19A60423ACDE5EE125 /* TikTokView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		D99C6027586942F28BD9D07E /* LosloDashboardTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E4FDA7F0C2A2F9287473B70E /* Build configuration list for PBXNativeTarget "LosloDashboardTests" */;
+			buildPhases = (
+				4C3A20A44D0D212F218D26E7 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9B1D563D58A829B7731D2918 /* PBXTargetDependency */,
+			);
+			name = LosloDashboardTests;
+			packageProductDependencies = (
+			);
+			productName = LosloDashboardTests;
+			productReference = 2CA87AC8862DA4E5C79F9C9F /* LosloDashboardTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		EEA9BDDF1BDE229A093D996D /* LosloDashboard */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 10E0D0A29E62FAA55FCAF4D5 /* Build configuration list for PBXNativeTarget "LosloDashboard" */;
+			buildPhases = (
+				553796175B508AE411894D95 /* Sources */,
+				9E4B010B70A7C1AAEBC17BAF /* Resources */,
+				9C39A662FBB276412C673463 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LosloDashboard;
+			packageProductDependencies = (
+			);
+			productName = LosloDashboard;
+			productReference = 58DA15C963E412A7BFDBCAF7 /* Loslo Dashboard.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		C746B738145675663A19F098 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					D99C6027586942F28BD9D07E = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+					};
+					EEA9BDDF1BDE229A093D996D = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+					};
+				};
+			};
+			buildConfigurationList = F2C19847CF3635C7511BD751 /* Build configuration list for PBXProject "LosloDashboard" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 180454E1B917800F7D69D2F3;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 30AA69018C2785D88E1EECE9 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				EEA9BDDF1BDE229A093D996D /* LosloDashboard */,
+				D99C6027586942F28BD9D07E /* LosloDashboardTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		9E4B010B70A7C1AAEBC17BAF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CD0BF6FF2865633DBE92FD36 /* AppIcon.icns in Resources */,
+				AA5AA85B890C5A2A630BBEA6 /* bricolage-OFL.txt in Resources */,
+				FFB8F986906B0CD6B92E40B0 /* bricolage.ttf in Resources */,
+				AD9E7AB674F03D3AD0830899 /* hanken-OFL.txt in Resources */,
+				3954CFABCA05337A665240AE /* hanken.ttf in Resources */,
+				94B13A59DD2605D0F32ABE25 /* loslo-logo.png in Resources */,
+				0247693409AD3EEBC6CF350E /* world-atlas-LICENSE.txt in Resources */,
+				AB4FBF7F2A3A25CEA26DFF9F /* world-polygons.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4C3A20A44D0D212F218D26E7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3485341D13D32995E1B6DF27 /* AnalyticsTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		553796175B508AE411894D95 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6529B0953F54042C5641D556 /* API.swift in Sources */,
+				E2BC7E8E11F84795AF9876E1 /* Analytics.swift in Sources */,
+				4302C2E5888292554EA62196 /* AppleService.swift in Sources */,
+				09F9510460E9BF50FF7969B5 /* Charts.swift in Sources */,
+				15A50B9CAE0D3A6CAF6535B9 /* Countries.swift in Sources */,
+				BF1922FACD4A610BE3E6CF6B /* DashboardStore.swift in Sources */,
+				0A63AEE28F4FBD79495EA31A /* GeographyView.swift in Sources */,
+				2A92F47CD058604BF5955533 /* JWT.swift in Sources */,
+				F7AD5FB6034107DC47843C7F /* LocalStorage.swift in Sources */,
+				1D66D6841334ED0517BEB987 /* LosloDashboardApp.swift in Sources */,
+				DD05D7B46A8FE8F0BC88E6A0 /* OverviewView.swift in Sources */,
+				F7A45E1E60DC46E8EAC70F83 /* RevenueView.swift in Sources */,
+				81D8D01ECA4220C53C3B9D66 /* SettingsView.swift in Sources */,
+				5DBB82E0AF3BC6CE6BD78448 /* Theme.swift in Sources */,
+				491608B3A25871D6F07EB299 /* TikTokService.swift in Sources */,
+				E194C71E021AC733EE64C851 /* TikTokView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		9B1D563D58A829B7731D2918 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = EEA9BDDF1BDE229A093D996D /* LosloDashboard */;
+			targetProxy = 11C7D23EA65383B223AD2791 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0013B669F96C63B50FB4723D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Loslo Dashboard.app/Contents/MacOS/Loslo Dashboard";
+			};
+			name = Release;
+		};
+		29FED6828E270C91CBD5D8EE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Loslo Dashboard";
+				INFOPLIST_KEY_CFBundleIconFile = AppIcon;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
+				INFOPLIST_KEY_NSHumanReadableCopyright = Loslo;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.loslo.dashboard.swift;
+				PRODUCT_MODULE_NAME = LosloDashboard;
+				PRODUCT_NAME = "Loslo Dashboard";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		5195D27326A5A329C3E2DE52 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Loslo Dashboard";
+				INFOPLIST_KEY_CFBundleIconFile = AppIcon;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
+				INFOPLIST_KEY_NSHumanReadableCopyright = Loslo;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.loslo.dashboard.swift;
+				PRODUCT_MODULE_NAME = LosloDashboard;
+				PRODUCT_NAME = "Loslo Dashboard";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		708C6EE120E7453AC90E7CB5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		7432C0081DA4B703C05F272F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Loslo Dashboard.app/Contents/MacOS/Loslo Dashboard";
+			};
+			name = Debug;
+		};
+		8863F66BDAD00675EE61BF58 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		10E0D0A29E62FAA55FCAF4D5 /* Build configuration list for PBXNativeTarget "LosloDashboard" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5195D27326A5A329C3E2DE52 /* Debug */,
+				29FED6828E270C91CBD5D8EE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E4FDA7F0C2A2F9287473B70E /* Build configuration list for PBXNativeTarget "LosloDashboardTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7432C0081DA4B703C05F272F /* Debug */,
+				0013B669F96C63B50FB4723D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F2C19847CF3635C7511BD751 /* Build configuration list for PBXProject "LosloDashboard" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8863F66BDAD00675EE61BF58 /* Debug */,
+				708C6EE120E7453AC90E7CB5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = C746B738145675663A19F098 /* Project object */;
+}

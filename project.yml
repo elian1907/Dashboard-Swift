@@ -1,0 +1,52 @@
+name: LosloDashboard
+options:
+  deploymentTarget:
+    macOS: '26.0'
+settings:
+  base:
+    SWIFT_VERSION: '5.0'
+    MACOSX_DEPLOYMENT_TARGET: '26.0'
+    CODE_SIGN_IDENTITY: '-'
+    CODE_SIGN_STYLE: Manual
+    DEVELOPMENT_TEAM: ''
+    ENABLE_HARDENED_RUNTIME: YES
+    ENABLE_APP_SANDBOX: NO
+    MARKETING_VERSION: '1.0'
+    CURRENT_PROJECT_VERSION: '1'
+targets:
+  LosloDashboard:
+    productName: Loslo Dashboard
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.loslo.dashboard.swift
+        PRODUCT_NAME: Loslo Dashboard
+        PRODUCT_MODULE_NAME: LosloDashboard
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Loslo Dashboard
+        INFOPLIST_KEY_CFBundleIconFile: AppIcon
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.business
+        INFOPLIST_KEY_NSHumanReadableCopyright: Loslo
+    dependencies:
+      - sdk: libz.tbd
+  LosloDashboardTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources: [Tests]
+    dependencies:
+      - target: LosloDashboard
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Loslo Dashboard.app/Contents/MacOS/Loslo Dashboard"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+schemes:
+  LosloDashboard:
+    build:
+      targets:
+        LosloDashboard: all
+    test:
+      targets: [LosloDashboardTests]
