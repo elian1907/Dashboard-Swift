@@ -146,6 +146,81 @@ final class ProgressiveLoadingTests: XCTestCase {
     }
   }
 
+  @MainActor func testRevisitedPagesReuseTheirHostAndOnlySelectedPageIsAttached() {
+    let store = DashboardStore(loadConfiguration: false)
+    let container = DashboardPageHost.PageContainer(
+      frame: NSRect(x: 0, y: 0, width: 1000, height: 700))
+    let binding = Binding.constant(DashboardPage.downloads)
+    container.show(page: .downloads, selection: binding, store: store)
+    let downloads = container.subviews.first!
+    container.show(page: .revenue, selection: binding, store: store)
+    let revenue = container.subviews.first!
+    XCTAssertFalse(downloads === revenue)
+    XCTAssertNil(downloads.superview, "Off-screen pages must not participate in window layout.")
+    container.show(page: .downloads, selection: binding, store: store)
+    XCTAssertTrue(
+      container.subviews.first === downloads,
+      "Returning must retain the prepared native view graph.")
+    XCTAssertNil(revenue.superview)
+    XCTAssertEqual(container.subviews.count, 1)
+    container.setFrameSize(NSSize(width: 1200, height: 800))
+    XCTAssertEqual(downloads.frame, container.bounds)
+    // Header/store changes must not replace the active page or reset local filters.
+    store.period = .week
+    container.show(page: .downloads, selection: binding, store: store)
+    XCTAssertTrue(container.subviews.first === downloads)
+  }
+
+  @MainActor func testAllDestinationsCanBeSelectedWhileEverySourceIsLoading() {
+    let store = DashboardStore(loadConfiguration: false)
+    store.loading = ["overview", "revenue", "mrr", "trials", "apple", "users", "tiktok"]
+    let container = DashboardPageHost.PageContainer(
+      frame: NSRect(x: 0, y: 0, width: 1000, height: 700))
+    for page in DashboardPage.allCases {
+      container.show(page: page, selection: .constant(page), store: store)
+      XCTAssertEqual(container.selection, page)
+      XCTAssertEqual(container.subviews.count, 1)
+      XCTAssertEqual(container.subviews.first?.frame, container.bounds)
+    }
+    XCTAssertNil(store.apple)
+    XCTAssertNil(store.revenue)
+    XCTAssertTrue(store.busy("tiktok"))
+  }
+
+  @MainActor func testCachedPageResumesFirstPaintAfterBeingDetachedDuringLoading() async {
+    var constructed = false
+    let host = NSHostingView(
+      rootView: ProgressiveContent(identity: "cached") {
+        Text("Chargement").frame(width: 240, height: 120)
+      } content: {
+        constructed = true
+        return Text("Données").frame(width: 240, height: 120)
+      })
+    let window = NSWindow(
+      contentRect: NSRect(x: 0, y: 0, width: 240, height: 120),
+      styleMask: [.borderless], backing: .buffered, defer: false)
+    window.isReleasedWhenClosed = false
+    window.contentView = host
+    window.orderFront(nil)
+    defer {
+      window.orderOut(nil)
+      window.contentView = nil
+      window.close()
+    }
+    host.layoutSubtreeIfNeeded()
+    host.displayIfNeeded()
+    XCTAssertFalse(constructed)
+    window.contentView = nil
+    for _ in 0..<10 { await Task.yield() }
+    XCTAssertFalse(constructed, "Detached pages must not mount charts in the background.")
+    window.contentView = host
+    host.layoutSubtreeIfNeeded()
+    host.displayIfNeeded()
+    await waitUntil { constructed }
+    XCTAssertTrue(
+      constructed, "Returning must resume loading even if the first paint was interrupted.")
+  }
+
   @MainActor private func waitUntil(_ condition: () -> Bool) async {
     let deadline = Date().addingTimeInterval(3)
     while !condition(), Date() < deadline { await Task.yield() }

@@ -29,6 +29,7 @@
 		AD9E7AB674F03D3AD0830899 /* hanken-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = AFE8A43F5BFC98FA483AC262 /* hanken-OFL.txt */; };
 		BF1922FACD4A610BE3E6CF6B /* DashboardStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14D103214ED351057833B6A /* DashboardStore.swift */; };
 		CD0BF6FF2865633DBE92FD36 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 565C9CC1D22C0AB2D381A528 /* AppIcon.icns */; };
+		D636C0A824C4EB4A8F98FF5A /* DashboardPageHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = C84F0A625C4F15BA61E56E17 /* DashboardPageHost.swift */; };
 		DD05D7B46A8FE8F0BC88E6A0 /* OverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14E29654EF689FEEF0368D1B /* OverviewView.swift */; };
 		E194C71E021AC733EE64C851 /* TikTokView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F8EAB19A60423ACDE5EE125 /* TikTokView.swift */; };
 		E2BC7E8E11F84795AF9876E1 /* Analytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9156C14AC985CA35AAA8478 /* Analytics.swift */; };
@@ -75,6 +76,7 @@
 		AE99D60A3A3FF8C511E93838 /* Countries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Countries.swift; sourceTree = "<group>"; };
 		AFE8A43F5BFC98FA483AC262 /* hanken-OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "hanken-OFL.txt"; sourceTree = "<group>"; };
 		B14D103214ED351057833B6A /* DashboardStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardStore.swift; sourceTree = "<group>"; };
+		C84F0A625C4F15BA61E56E17 /* DashboardPageHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardPageHost.swift; sourceTree = "<group>"; };
 		F51F7C5F9CFB15B45A5FDDE1 /* Charts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Charts.swift; sourceTree = "<group>"; };
 		F79153D835F6DF3D4D20C522 /* PageLoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageLoadingView.swift; sourceTree = "<group>"; };
 		F8FADED95AF7E0BE0CC7C02E /* world-polygons.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "world-polygons.json"; sourceTree = "<group>"; };
@@ -190,6 +192,7 @@
 			isa = PBXGroup;
 			children = (
 				F51F7C5F9CFB15B45A5FDDE1 /* Charts.swift */,
+				C84F0A625C4F15BA61E56E17 /* DashboardPageHost.swift */,
 				1C577F1B3C93C06EF1398E14 /* GeographyView.swift */,
 				14E29654EF689FEEF0368D1B /* OverviewView.swift */,
 				F79153D835F6DF3D4D20C522 /* PageLoadingView.swift */,
@@ -316,6 +319,7 @@
 				4302C2E5888292554EA62196 /* AppleService.swift in Sources */,
 				09F9510460E9BF50FF7969B5 /* Charts.swift in Sources */,
 				15A50B9CAE0D3A6CAF6535B9 /* Countries.swift in Sources */,
+				D636C0A824C4EB4A8F98FF5A /* DashboardPageHost.swift in Sources */,
 				BF1922FACD4A610BE3E6CF6B /* DashboardStore.swift in Sources */,
 				0A63AEE28F4FBD79495EA31A /* GeographyView.swift in Sources */,
 				2A92F47CD058604BF5955533 /* JWT.swift in Sources */,

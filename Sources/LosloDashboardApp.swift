@@ -80,22 +80,8 @@ struct RootView: View {
             title: "Période d’analyse", selection: $store.period,
             options: Period.allCases.map { (value: $0, label: $0.label) })
         }.padding(.horizontal, 26).padding(.top, 22).padding(.bottom, 24)
-        ScrollViewReader { proxy in
-          ScrollView {
-            GlassEffectContainer(spacing: 0) {
-              VStack(spacing: 0) {
-                Color.clear.frame(height: 0).id("page-top")
-                ProgressiveContent(identity: page) {
-                  PageLoadingView(page: $page)
-                } content: {
-                  content
-                }.padding(.horizontal, 26).padding(.bottom, 26).frame(maxWidth: 1700)
-              }
-            }
-          }.scrollIndicators(.hidden)
-            .transaction { $0.animation = nil }
-            .onChange(of: page) { proxy.scrollTo("page-top", anchor: .top) }
-        }
+        DashboardPageHost(page: $page, store: store)
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
       }
     }.background { DashboardBackdrop() }.foregroundStyle(Theme.text)
       .task {
@@ -111,16 +97,6 @@ struct RootView: View {
         periodTask = Task { await store.refreshPeriod() }
       }
       .onDisappear { periodTask?.cancel() }
-  }
-  @ViewBuilder var content: some View {
-    switch page {
-    case .overview: OverviewView(page: $page)
-    case .revenue: RevenueView()
-    case .downloads: AcquisitionView()
-    case .users: AcquisitionView(users: true)
-    case .geography: GeographyView()
-    case .tiktok: TikTokView()
-    }
   }
 }
 

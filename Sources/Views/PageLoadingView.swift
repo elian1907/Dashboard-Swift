@@ -36,17 +36,23 @@ private struct FirstPaint: NSViewRepresentable {
   final class Observer: NSView {
     var completion: (() -> Void)?
     private var scheduled = false
+    private var attachment = 0
     override var isOpaque: Bool { false }
     override func viewDidMoveToWindow() {
       super.viewDidMoveToWindow()
-      needsDisplay = true
+      // Cached pages can detach between draw and its deferred callback.
+      // A new attachment must get another opportunity to finish its first paint.
+      attachment += 1
+      scheduled = false
+      if window != nil { needsDisplay = true }
     }
     override func draw(_ dirtyRect: NSRect) {
       super.draw(dirtyRect)
       guard !scheduled else { return }
       scheduled = true
+      let drawnAttachment = attachment
       DispatchQueue.main.async { [weak self] in
-        guard let self, self.window != nil else { return }
+        guard let self, self.window != nil, self.attachment == drawnAttachment else { return }
         self.completion?()
       }
     }
